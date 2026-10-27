@@ -43,7 +43,6 @@ from powercontext.builtin.artifacts.memory import EmbeddingProfile
 from powercontext.builtin.artifacts.memory.canonical import canonical_embedding
 from powercontext.builtin.artifacts.search import analyze_text, fts_match_query, fts_query_requirements
 from powercontext.builtin.artifacts.topic_memory import (
-    TOPIC_MEMORY_CHUNK_MAX_COUNT,
     TopicMemoryCapabilities,
     TopicMemoryCapabilityError,
     TopicMemoryChannelHit,
@@ -52,6 +51,7 @@ from powercontext.builtin.artifacts.topic_memory import (
     TopicMemorySearchChannels,
     TopicMemorySearchRequest,
 )
+from powercontext.builtin.persistence.source_lifecycle import topic_lifecycle_sql
 from powercontext.builtin.persistence.tables import (
     SHARED_METADATA,
     TOPIC_MEMORY_ACTIVE_CHUNKS_TABLE,
@@ -107,7 +107,6 @@ SQLITE_TOPIC_MEMORY_VECTOR_TABLES = (
     SQLITE_TOPIC_MEMORY_VECTOR_TOPICS_TABLE,
     SQLITE_TOPIC_MEMORY_VECTOR_CHUNKS_TABLE,
 )
-_SQLITE_VEC_MAX_K = 4096
 
 _CREATE_TOPIC_FTS_SQL = """
 CREATE VIRTUAL TABLE IF NOT EXISTS pc_topic_memory_topic_fts USING fts5(
@@ -153,34 +152,38 @@ _SEARCH_TOPIC_FTS_SQL = """
                bm25(pc_topic_memory_topic_fts) AS score, ({coverage}) AS coverage
         FROM pc_topic_memory_topic_fts
         WHERE pc_topic_memory_topic_fts MATCH :query AND scope_id = :scope_id
+          AND {eligibility}
     )
     SELECT artifact_id, revision, title, summary
     FROM scored
     WHERE coverage >= :required_matches
     ORDER BY score, artifact_id, revision DESC
     LIMIT :candidate_limit
-    """
+    """.replace("{eligibility}", topic_lifecycle_sql("pc_topic_memory_topic_fts"))
 _COUNT_TOPIC_FTS_SQL = """
     SELECT count(*)
     FROM pc_topic_memory_topic_fts
     WHERE pc_topic_memory_topic_fts MATCH :query AND scope_id = :scope_id
-    """
+          AND {eligibility}
+    """.replace("{eligibility}", topic_lifecycle_sql("pc_topic_memory_topic_fts"))
 _COUNT_TOPIC_FTS_ELIGIBLE_SQL = """
     WITH scored AS (
         SELECT ({coverage}) AS coverage
         FROM pc_topic_memory_topic_fts
         WHERE pc_topic_memory_topic_fts MATCH :query AND scope_id = :scope_id
+          AND {eligibility}
     )
     SELECT count(*)
     FROM scored
     WHERE coverage >= :required_matches
-    """
+    """.replace("{eligibility}", topic_lifecycle_sql("pc_topic_memory_topic_fts"))
 _SEARCH_CHUNK_FTS_SQL = """
     WITH scored AS (
         SELECT artifact_id, revision, title, summary, chunk_ordinal, start_offset, chunk_text,
                bm25(pc_topic_memory_chunk_fts) AS score, ({coverage}) AS coverage
         FROM pc_topic_memory_chunk_fts
         WHERE pc_topic_memory_chunk_fts MATCH :query AND scope_id = :scope_id
+          AND {eligibility}
     ), ranked AS (
         SELECT scored.*,
                row_number() OVER (
@@ -194,13 +197,14 @@ _SEARCH_CHUNK_FTS_SQL = """
     WHERE topic_rank = 1 AND coverage >= :required_matches
     ORDER BY score, artifact_id, revision DESC, chunk_ordinal
     LIMIT :candidate_limit
-    """
+    """.replace("{eligibility}", topic_lifecycle_sql("pc_topic_memory_chunk_fts"))
 _COUNT_CHUNK_FTS_SQL = """
     WITH scored AS (
         SELECT artifact_id, revision, title, summary, chunk_ordinal, start_offset, chunk_text,
                bm25(pc_topic_memory_chunk_fts) AS score, ({coverage}) AS coverage
         FROM pc_topic_memory_chunk_fts
         WHERE pc_topic_memory_chunk_fts MATCH :query AND scope_id = :scope_id
+          AND {eligibility}
     ), ranked AS (
         SELECT scored.*,
                row_number() OVER (
@@ -212,13 +216,14 @@ _COUNT_CHUNK_FTS_SQL = """
     SELECT count(*)
     FROM ranked
     WHERE topic_rank = 1
-    """
+    """.replace("{eligibility}", topic_lifecycle_sql("pc_topic_memory_chunk_fts"))
 _COUNT_CHUNK_FTS_ELIGIBLE_SQL = """
     WITH scored AS (
         SELECT artifact_id, revision, chunk_ordinal,
                bm25(pc_topic_memory_chunk_fts) AS score, ({coverage}) AS coverage
         FROM pc_topic_memory_chunk_fts
         WHERE pc_topic_memory_chunk_fts MATCH :query AND scope_id = :scope_id
+          AND {eligibility}
     ), ranked AS (
         SELECT scored.*,
                row_number() OVER (
@@ -230,7 +235,7 @@ _COUNT_CHUNK_FTS_ELIGIBLE_SQL = """
     SELECT count(*)
     FROM ranked
     WHERE topic_rank = 1 AND coverage >= :required_matches
-    """
+    """.replace("{eligibility}", topic_lifecycle_sql("pc_topic_memory_chunk_fts"))
 
 _DELETE_TOPIC_VECTOR_SQL = text("DELETE FROM pc_topic_memory_topic_vec WHERE rowid = :vector_id")
 _DELETE_CHUNK_VECTOR_SQL = text("DELETE FROM pc_topic_memory_chunk_vec WHERE rowid = :vector_id")
@@ -246,50 +251,44 @@ _PROBE_TOPIC_VECTOR_SQL = (
 _PROBE_CHUNK_VECTOR_SQL = (
     "SELECT rowid FROM pc_topic_memory_chunk_vec WHERE scope_id = ? AND embedding MATCH ? AND k = 1"
 )
+# Apply scope, profile and lifecycle eligibility before the candidate budget.
+# SQLite virtual-table rowid IN constraints can otherwise run after KNN's k.
 _TOPIC_VECTOR_SEARCH_SQL = text(
     """
-    WITH nearest AS (
-        SELECT rowid, distance FROM pc_topic_memory_topic_vec
-        WHERE scope_id = :scope_id AND embedding MATCH :query_vector AND k = :neighbor_limit
-          AND rowid IN (
-              SELECT vector_id FROM pc_topic_memory_vector_topics
-              WHERE scope_id = :scope_id AND profile_fingerprint = :profile_fingerprint
-          )
-    )
-    SELECT a.artifact_id, a.revision, a.title, a.summary, nearest.distance
-    FROM nearest
-    JOIN pc_topic_memory_vector_topics AS v ON v.vector_id = nearest.rowid
+    SELECT a.artifact_id, a.revision, a.title, a.summary,
+           vec_distance_L2(e.embedding, :query_vector) AS distance
+    FROM pc_topic_memory_vector_topics AS v
+    JOIN pc_topic_memory_topic_vec AS e ON e.rowid = v.vector_id
     JOIN pc_topic_memory_active_topics AS a
       ON a.scope_id = v.scope_id AND a.artifact_id = v.artifact_id AND a.revision = v.revision
-    WHERE v.scope_id = :scope_id
-    ORDER BY nearest.distance, a.artifact_id, a.revision DESC
+    WHERE v.scope_id = :scope_id AND v.profile_fingerprint = :profile_fingerprint
+      AND {eligibility}
+    ORDER BY distance, a.artifact_id, a.revision DESC
     LIMIT :candidate_limit
-    """
+    """.replace("{eligibility}", topic_lifecycle_sql("v"))
 )
 _CHUNK_VECTOR_SEARCH_SQL = text(
     """
-    WITH nearest AS (
-        SELECT rowid, distance FROM pc_topic_memory_chunk_vec
-        WHERE scope_id = :scope_id AND embedding MATCH :query_vector AND k = :neighbor_limit
-          AND rowid IN (
-              SELECT vector_id FROM pc_topic_memory_vector_chunks
-              WHERE scope_id = :scope_id AND profile_fingerprint = :profile_fingerprint
-          )
-    ), ranked AS (
+    WITH scored AS (
         SELECT a.artifact_id, a.revision, a.title, a.summary,
-               c.chunk_ordinal, c.start_offset, c.chunk_text, nearest.distance,
-               row_number() OVER (
-                   PARTITION BY a.artifact_id, a.revision
-                   ORDER BY nearest.distance, c.chunk_ordinal
-               ) AS topic_rank
-        FROM nearest
-        JOIN pc_topic_memory_vector_chunks AS v ON v.vector_id = nearest.rowid
+               c.chunk_ordinal, c.start_offset, c.chunk_text,
+               vec_distance_L2(e.embedding, :query_vector) AS distance
+        FROM pc_topic_memory_vector_chunks AS v
+        JOIN pc_topic_memory_chunk_vec AS e ON e.rowid = v.vector_id
         JOIN pc_topic_memory_active_topics AS a
           ON a.scope_id = v.scope_id AND a.artifact_id = v.artifact_id AND a.revision = v.revision
         JOIN pc_topic_memory_active_chunks AS c
           ON c.scope_id = v.scope_id AND c.artifact_id = v.artifact_id
          AND c.revision = v.revision AND c.chunk_ordinal = v.chunk_ordinal
-        WHERE v.scope_id = :scope_id
+        WHERE v.scope_id = :scope_id AND v.profile_fingerprint = :profile_fingerprint
+          AND {eligibility}
+    ), ranked AS (
+        SELECT scored.*,
+               row_number() OVER (
+                   PARTITION BY artifact_id, revision
+                   ORDER BY distance, chunk_ordinal
+               ) AS topic_rank
+        FROM scored
     )
     SELECT artifact_id, revision, title, summary,
            chunk_ordinal, start_offset, chunk_text, distance
@@ -297,7 +296,7 @@ _CHUNK_VECTOR_SEARCH_SQL = text(
     WHERE topic_rank = 1
     ORDER BY distance, artifact_id, revision DESC, chunk_ordinal
     LIMIT :candidate_limit
-    """
+    """.replace("{eligibility}", topic_lifecycle_sql("v"))
 )
 
 
@@ -625,19 +624,13 @@ class SQLiteTopicMemoryVectorIndex:
         topic_rows = (
             await connection.execute(
                 _TOPIC_VECTOR_SEARCH_SQL,
-                {**parameters, "neighbor_limit": request.candidate_limit},
+                parameters,
             )
         ).mappings()
         chunk_rows = (
             await connection.execute(
                 _CHUNK_VECTOR_SEARCH_SQL,
-                {
-                    **parameters,
-                    "neighbor_limit": min(
-                        request.candidate_limit * TOPIC_MEMORY_CHUNK_MAX_COUNT,
-                        _SQLITE_VEC_MAX_K,
-                    ),
-                },
+                parameters,
             )
         ).mappings()
         return TopicMemorySearchChannels(
