@@ -1,0 +1,411 @@
+{
+  "source": {
+    "dataset": "SciFact public development split",
+    "repository_commit": "68b98a56d93e0f9da0d2aab4e6c3294699a0f72e",
+    "url": "https://scifact.s3-us-west-2.amazonaws.com/release/latest/data.tar.gz",
+    "sha256": "11c621288d41ac144d29b13b0f8503b3820b7d6e8b1f6ff24dff335c196d76be",
+    "bytes": 3115079
+  },
+  "answers": {
+    "5": {
+      "document_id": "13734012",
+      "ranges": [
+        [
+          1015,
+          1201
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          1015,
+          1201
+        ]
+      ]
+    },
+    "48": {
+      "document_id": "13734012",
+      "ranges": [
+        [
+          1015,
+          1201
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          1015,
+          1201
+        ]
+      ]
+    },
+    "49": {
+      "document_id": "5953485",
+      "ranges": [
+        [
+          248,
+          458
+        ],
+        [
+          459,
+          702
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          248,
+          702
+        ]
+      ]
+    },
+    "50": {
+      "document_id": "12580014",
+      "ranges": [
+        [
+          281,
+          518
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          281,
+          518
+        ]
+      ]
+    },
+    "51": {
+      "document_id": "45638119",
+      "ranges": [
+        [
+          851,
+          967
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          851,
+          967
+        ]
+      ]
+    },
+    "53": {
+      "document_id": "45638119",
+      "ranges": [
+        [
+          851,
+          967
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          851,
+          967
+        ]
+      ]
+    },
+    "54": {
+      "document_id": "49556906",
+      "ranges": [
+        [
+          720,
+          927
+        ],
+        [
+          928,
+          1085
+        ],
+        [
+          1086,
+          1338
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          720,
+          1338
+        ]
+      ]
+    },
+    "56": {
+      "document_id": "4709641",
+      "ranges": [
+        [
+          310,
+          703
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          310,
+          703
+        ]
+      ]
+    },
+    "57": {
+      "document_id": "4709641",
+      "ranges": [
+        [
+          310,
+          703
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          310,
+          703
+        ]
+      ]
+    },
+    "100": {
+      "document_id": "4381486",
+      "ranges": [
+        [
+          1237,
+          1377
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          1237,
+          1377
+        ]
+      ]
+    },
+    "115": {
+      "document_id": "33872649",
+      "ranges": [
+        [
+          1172,
+          1439
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          1172,
+          1439
+        ]
+      ]
+    },
+    "118": {
+      "document_id": "6372244",
+      "ranges": [
+        [
+          128,
+          311
+        ],
+        [
+          1011,
+          1184
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          128,
+          311
+        ],
+        [
+          1011,
+          1184
+        ]
+      ]
+    },
+    "124": {
+      "document_id": "4883040",
+      "ranges": [
+        [
+          1310,
+          1711
+        ],
+        [
+          1823,
+          1959
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          1310,
+          1959
+        ]
+      ]
+    },
+    "133": {
+      "document_id": "16280642",
+      "ranges": [
+        [
+          415,
+          653
+        ],
+        [
+          654,
+          808
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          415,
+          808
+        ]
+      ]
+    },
+    "137": {
+      "document_id": "26016929",
+      "ranges": [
+        [
+          945,
+          1135
+        ],
+        [
+          1249,
+          1354
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          945,
+          1354
+        ]
+      ]
+    },
+    "142": {
+      "document_id": "10582939",
+      "ranges": [
+        [
+          2323,
+          2819
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          2323,
+          2819
+        ]
+      ]
+    },
+    "143": {
+      "document_id": "10582939",
+      "ranges": [
+        [
+          2323,
+          2819
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          2323,
+          2819
+        ]
+      ]
+    },
+    "148": {
+      "document_id": "1084345",
+      "ranges": [
+        [
+          316,
+          606
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          316,
+          606
+        ]
+      ]
+    },
+    "163": {
+      "document_id": "18872233",
+      "ranges": [
+        [
+          1866,
+          2086
+        ],
+        [
+          2369,
+          2491
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          1866,
+          2086
+        ],
+        [
+          2369,
+          2491
+        ]
+      ]
+    },
+    "180": {
+      "document_id": "16966326",
+      "ranges": [
+        [
+          930,
+          1124
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          930,
+          1124
+        ]
+      ]
+    },
+    "183": {
+      "document_id": "12827098",
+      "ranges": [
+        [
+          737,
+          898
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          737,
+          898
+        ]
+      ]
+    },
+    "208": {
+      "document_id": "13519661",
+      "ranges": [
+        [
+          1065,
+          1265
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          1065,
+          1265
+        ]
+      ]
+    },
+    "216": {
+      "document_id": "21366394",
+      "ranges": [
+        [
+          794,
+          1015
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          794,
+          1015
+        ]
+      ]
+    },
+    "217": {
+      "document_id": "21366394",
+      "ranges": [
+        [
+          794,
+          1015
+        ]
+      ],
+      "minimal_ranges": [
+        [
+          794,
+          1015
+        ]
+      ]
+    }
+  }
+}

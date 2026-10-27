@@ -34,6 +34,7 @@ from powercontext.builtin.runtime.prepared_code import (
     PreparedCodeCandidate,
     assemble_code,
 )
+from powercontext.builtin.runtime.prepared_evidence import EvidenceSpan, select_evidence_spans
 from powercontext.builtin.runtime.prepared_text import (
     TRUST_POLICY,
     ContextTextItem,
@@ -106,6 +107,7 @@ class PreparedContextBuild:
     origins: tuple[PreparedContextOrigin, ...]
     omissions: PreparedContextOmissions = PreparedContextOmissions()
     code_origins: tuple[CodeEvidenceRef, ...] = ()
+    fragments: tuple[PreparedMemoryFragment, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -115,6 +117,22 @@ class MemoryEntryAddress:
     memory: ArtifactAddress
     entry_id: str
     entry_version_id: str
+
+
+@dataclass(frozen=True)
+class PreparedMemoryFragment:
+    """An exact half-open character range in one cited Memory entry."""
+
+    address: MemoryEntryAddress
+    start: int
+    end: int
+    text: str
+
+    def __post_init__(self) -> None:
+        if type(self.start) is not int or type(self.end) is not int or not 0 <= self.start < self.end:
+            raise PreparedContextInvariantError("fragment-range")
+        if not isinstance(self.text, str) or len(self.text) != self.end - self.start:
+            raise PreparedContextInvariantError("fragment-text")
 
 
 PreparedContextOrigin = MemoryCitation | ArtifactRef | MemoryEntryAddress | ArtifactAddress
@@ -211,6 +229,8 @@ class PreparedContextBuilder:
         profile_candidates: Sequence[PreparedProfileCandidate] = (),
         code_candidates: Sequence[PreparedCodeCandidate] = (),
     ) -> PreparedContextBuild:
+        if request.evidence_selection:
+            return self._build_evidence(request, current_scope_id, memory_candidates)
         if request.include_code:
 
             def historical(history_request: PrepareContextRequest, entries: int) -> PreparedContextBuild:
@@ -256,6 +276,81 @@ class PreparedContextBuilder:
             omissions=omissions,
         )
 
+    def _build_evidence(
+        self,
+        request: PrepareContextRequest,
+        current_scope_id: str | None,
+        candidates: Sequence[PreparedMemoryCandidates],
+    ) -> PreparedContextBuild:
+        if sum(len(group.hits) for group in candidates) > self.memory_candidate_limit:
+            raise PreparedContextInvariantError("memory-candidate-limit")
+        addresses: list[MemoryEntryAddress] = []
+        texts: list[str] = []
+        citations: list[dict[str, object]] = []
+        seen: dict[tuple[str, str, str, int, str, str], str] = {}
+        for group in candidates:
+            scope = group.scope_id or current_scope_id
+            if group.hits and not scope:
+                raise PreparedContextInvariantError("evidence-scope-missing")
+            for entry in self._memory_entries(group.memory_ref, group.hits, scope_id=scope):
+                address = entry.origin
+                if not isinstance(address, MemoryEntryAddress):
+                    raise PreparedContextInvariantError("evidence-scope-missing")
+                identity = (
+                    address.memory.scope_id,
+                    address.memory.artifact.family,
+                    address.memory.artifact.artifact_id,
+                    address.memory.artifact.revision,
+                    address.entry_id,
+                    address.entry_version_id,
+                )
+                if identity in seen:
+                    if seen[identity] != entry.content:
+                        raise PreparedContextInvariantError("memory-content-mismatch")
+                    continue
+                seen[identity] = entry.content
+                addresses.append(address)
+                texts.append(entry.content)
+                citations.append({
+                    "scope_id": address.memory.scope_id,
+                    "memory_ref": address.memory.artifact.model_dump(mode="json"),
+                    "entry_id": address.entry_id,
+                    "entry_version_id": address.entry_version_id,
+                })
+
+        def render(spans: tuple[EvidenceSpan, ...]) -> str:
+            return _render_items([
+                {
+                    "citation": citations[span.document],
+                    "content": texts[span.document][span.start : span.end],
+                    "start": span.start,
+                    "end": span.end,
+                }
+                for span in spans
+            ])
+
+        spans = select_evidence_spans(
+            request.query,
+            texts,
+            max_bytes=request.max_bytes,
+            render=render,
+            fragment_limit=self.entry_limit,
+        )
+        if not spans:
+            return PreparedContextBuild(context=self.empty(), origins=())
+        fragments = tuple(
+            PreparedMemoryFragment(
+                addresses[span.document], span.start, span.end, texts[span.document][span.start : span.end]
+            )
+            for span in spans
+        )
+        content = render(spans)
+        return PreparedContextBuild(
+            context=PreparedContext(status="ready", content=content, content_bytes=len(content.encode("utf-8"))),
+            origins=tuple(fragment.address for fragment in fragments),
+            fragments=fragments,
+        )
+
     def probe_budget(
         self,
         *,
@@ -277,6 +372,15 @@ class PreparedContextBuilder:
         counters because both go through :meth:`_select_entries`.
         """
 
+        if request.evidence_selection:
+            result = self._build_evidence(request, current_scope_id, memory_candidates)
+            return RecallBudgetView(
+                max_bytes=request.max_bytes,
+                delivered_items=len(result.origins),
+                truncated_items=0,
+                dropped_items=0,
+                unused_bytes=max(0, request.max_bytes - result.context.content_bytes),
+            )
         content, origins, omissions = self._select_entries(
             request=request,
             current_scope_id=current_scope_id,
@@ -686,9 +790,13 @@ def _interleave_groups(groups: Sequence[Sequence[_Item]]) -> tuple[_Item, ...]:
 
 
 def _render(entries: Sequence[_PreparedContextEntry]) -> str:
+    return _render_items([_render_entry(entry) for entry in entries])
+
+
+def _render_items(items: Sequence[dict[str, object]]) -> str:
     envelope = {
         "trust": "untrusted_history",
-        "items": [_render_entry(entry) for entry in entries],
+        "items": items,
     }
     encoded = json.dumps(envelope, ensure_ascii=False, separators=(",", ":"))
     return "\n\n".join((TRUST_POLICY, f"{_BEGIN_MARKER}\n{encoded}\n{_END_MARKER}"))
