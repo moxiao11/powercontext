@@ -255,6 +255,9 @@ _FINANCIAL_TERMS = (
     (("restructuring", "reorganization"), ("restructuring", "charges", "costs")),
     (("revenue", "sales"), ("revenue", "net sales")),
     (("borrowings", "debt"), ("debt", "borrowings", "credit")),
+    (("quick", "liquidity"), ("cash equivalents", "receivables", "current liabilities", "short term investments")),
+    (("turnover",), ("inventory", "cost of goods sold", "current assets")),
+    (("intensive", "intensity"), ("property plant equipment", "capital expenditures", "revenue")),
 )
 
 
@@ -353,6 +356,90 @@ def _rank_pages(pages: list[_SearchPage], question: str) -> list[tuple[float, _S
     return sorted(scored, key=lambda item: -item[0])
 
 
+_STATEMENT_PHRASES = {
+    "income": (
+        "statement of income",
+        "statement of operations",
+        "statement of earnings",
+        "income statement",
+        "profit and loss",
+    ),
+    "cash": ("statement of cash flows", "cash flow statement"),
+    "balance": ("balance sheet", "statement of financial position", "statement of financial condition"),
+    "legal": ("legal proceedings", "litigation", "lawsuits", "contingencies"),
+}
+_REGIONS = frozenset(
+    _words("Africa Asia Europe America Pacific China Canada Mexico Latin Middle East international domestic")
+)
+
+
+def _query_facets(question: str) -> tuple[str, ...]:
+    """Identify independent evidence needs, rather than requiring all query terms on one page."""
+
+    words = set(_words(question))
+    capital_intensity = "capital" in words and bool(words & set(_words("intensive intensity")))
+    turnover = "inventory" in words and "turnover" in words
+    facets = []
+    if capital_intensity or turnover or words & set(_words("EBITDA income earnings profit revenue sales margin")):
+        facets.append("income")
+    if capital_intensity or "ebitda" in words or "capex" in words or {"cash", "flow"} <= words:
+        facets.append("cash")
+    if (
+        capital_intensity
+        or turnover
+        or words & set(_words("assets liabilities equity balance quick liquidity"))
+        or "working capital" in question.casefold()
+    ):
+        facets.append("balance")
+    if words & set(_words("legal litigation lawsuit battle contingency")):
+        facets.append("legal")
+    if words & set(_words("geography geographic region country")):
+        facets.append("geography")
+    return tuple(facets)
+
+
+def _facet_score(page: _SearchPage, facet: str) -> float:
+    if facet == "geography":
+        regions = page.terms.keys() & _REGIONS
+        if len(regions) < 2:
+            return 0
+        # Lists of operating regions are useful even when the document uses none
+        # of the question's geography synonyms. No company or page IDs are used.
+        score = 2 * len(regions) + sum(min(page.terms[region], 2) for region in regions)
+        return score + (8 if "business" in page.terms and "segment" in page.terms else 0)
+    normalized = " ".join(
+        term for term in _words(page.record.entry.text.partition("\n")[2][:600]) if term not in _STOP_TERMS
+    )
+    phrases = tuple(
+        " ".join(term for term in _words(phrase) if term not in _STOP_TERMS) for phrase in _STATEMENT_PHRASES[facet]
+    )
+    heading_match = any(phrase in normalized for phrase in phrases)
+    if heading_match:
+        return 5 + sum(word.isdigit() for word in page.terms) / max(len(page.terms), 1)
+    return 1 if any(phrase in page.normalized for phrase in phrases) else 0
+
+
+def _rank_evidence_pages(pages: list[_SearchPage], question: str) -> list[tuple[float, _SearchPage]]:
+    rankings = [_rank_pages(pages, question)]
+    for facet in _query_facets(question):
+        ranking = [(score, page) for page in pages if (score := _facet_score(page, facet)) > 0]
+        rankings.append(sorted(ranking, key=lambda item: -item[0]))
+    if len(rankings) == 1:
+        return rankings[0]
+    scores: dict[frozenset[str], float] = {}
+    evidence: dict[frozenset[str], _SearchPage] = {}
+    for channel, ranking in enumerate(rankings):
+        seen: set[frozenset[str]] = set()
+        for rank, (strength, page) in enumerate(ranking, start=1):
+            if page.pages in seen:
+                continue
+            seen.add(page.pages)
+            evidence.setdefault(page.pages, page)
+            confidence = 1.0 if channel == 0 else min(strength / 5, 1.0)
+            scores[page.pages] = scores.get(page.pages, 0) + confidence / (20 + rank)
+    return sorted(((score, evidence[key]) for key, score in scores.items()), key=lambda item: -item[0])
+
+
 async def search_pdf_pages(
     memory: ScopedMemoryApplication, question: str, limit: int = 10
 ) -> tuple[MemoryCitation, ...]:
@@ -378,7 +465,7 @@ async def search_pdf_pages(
     native = await memory.search(
         SearchMemoryRequest(query=question, mode="fts", limit=max(50, 5 * min(limit, len(snapshot.entries))))
     )
-    ranked = _rank_pages(_search_pages(snapshot.entries, question), question)
+    ranked = _rank_evidence_pages(_search_pages(snapshot.entries, question), question)
     native_order = {(hit.entry_id, hit.entry_version_id): index for index, hit in enumerate(native.hits)}
     ranked.sort(
         key=lambda item: (

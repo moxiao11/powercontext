@@ -152,3 +152,61 @@ async def test_financial_expansion_distinct_pages_scopes_and_exact_citations_aft
         assert legal_page.metadata["document_id"] == f"{company}_2024_10K"
         assert len(await search_pdf_pages(memory, f"{company} income cash flows", limit=10**50)) == 2
         assert await search_pdf_pages(runtime.memory.for_scope(other.scope_id), f"{company} EBITDA") == ()
+
+
+@pytest.mark.parametrize("company,statement", [("ORBIT", "Earnings"), ("NOVA", "Operations")])
+async def test_retrieval_covers_statement_and_region_evidence_among_many_keyword_mentions(
+    tmp_path: Path, company: str, statement: str
+) -> None:
+    boilerplate = "Employee policy and administrative terms apply to every employee. " * 25
+    distractors = tuple(
+        f"Administrative exhibit {number}. {boilerplate} "
+        "The unadjusted EBITDA analysis references the income statement and cash flow statement. "
+        "Geographies and regions, countries, domestic and international markets are discussed elsewhere."
+        for number in range(30)
+    )
+    evidence = (
+        f"Consolidated Statements of {statement}. Net sales 900. Operating profit 130. Income before taxes 110.",
+        "Consolidated Statements of Cash Flows. Depreciation and amortization 20. Capital expenditures 40.",
+        "Our business is organized into reportable segments across North America, Latin America and Europe.",
+        "Our Asia Pacific and Africa business comprises another segment with manufacturing and distribution.",
+        "Consolidated Balance Sheets. Current assets 250, including cash 70, receivables 80 and inventory 100. "
+        "Current liabilities 120. Property, plant and equipment 600. Total assets 900.",
+    )
+    registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
+    pages = parse_pdf_document(
+        PDFDocumentInput(document_id=f"{company}_2025_10K", content=_pdf(distractors + evidence))
+    )
+    config = BuiltinConfig(database=SQLiteConfig(url=f"sqlite+aiosqlite:///{tmp_path / 'facets.db'}"))
+    async with open_builtin_runtime(config, candidate_pipeline=_EvidencePipeline()) as runtime:
+        assert runtime.scopes is not None
+        scope = await runtime.scopes.create(
+            ScopeDraft(title="Reports", summary="Page evidence", idempotency_key="facets")
+        )
+        await runtime.ingestion.register(manifest_for_definition(PDF_PAGE_SOURCE_DEFINITION))
+        locations = {}
+        for page in pages:
+            observation = project_source_for_transport(registry, await registry.resolve(page))
+            locations[observation.name] = page.page_number
+            await runtime.ingestion.submit(SubmitSourceObservation(scope_id=scope.scope_id, observation=observation))
+        while (await runtime.memory.for_scope(scope.scope_id).flush()).processed:
+            pass
+    async with open_builtin_runtime(config) as runtime:
+        memory = runtime.memory.for_scope(scope.scope_id)
+        for question, required in (
+            (
+                f"Calculate the unadjusted EBITDA for {company} from operating income and depreciation and amortization.",
+                {31, 32},
+            ),
+            (f"In which geographies and regions does {company} operate?", {33, 34}),
+            (f"Does {company} have a healthy liquidity profile based on its quick ratio?", {35}),
+            (f"Is {company} a capital-intensive business?", {31, 32, 35}),
+            (f"Calculate the inventory turnover of {company}.", {31, 35}),
+        ):
+            citations = await search_pdf_pages(memory, question, limit=20)
+            found = set()
+            for citation in citations:
+                entry = (await memory.get(GetMemoryEntryRequest(citation=citation))).entry
+                found.update(locations[source.source_id] for source in entry.sources)
+            assert len(citations) <= 20 and len(citations) == len(found)
+            assert required <= found
