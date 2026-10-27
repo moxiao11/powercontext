@@ -98,10 +98,16 @@ def parse_pdf_document(value: PDFDocumentInput) -> tuple[PDFPageInput, ...]:
 
 
 def _extract_page_text(page: PageObject) -> str:
+    from pypdf.generic import ContentStream, NameObject
+
     contents = page.get_contents()
     if contents is not None:
         # Text extraction can skip fontless pages; malformed streams must still fail.
+        # Use extraction's byte-string decoding and retain the parsed stream so
+        # pypdf does not tokenize every page a second time during extract_text.
+        contents = ContentStream(contents, page.pdf, "bytes")
         _ = contents.operations
+        page[NameObject("/Contents")] = contents
     return page.extract_text() or ""
 
 
@@ -258,6 +264,10 @@ _FINANCIAL_TERMS = (
     (("quick", "liquidity"), ("cash equivalents", "receivables", "current liabilities", "short term investments")),
     (("turnover",), ("inventory", "cost of goods sold", "current assets")),
     (("intensive", "intensity"), ("property plant equipment", "capital expenditures", "revenue")),
+    (("ppne", "ppe"), ("property plant equipment", "accumulated depreciation", "net")),
+    (("merger", "acquisition"), ("organic sales", "acquisitions divestitures", "segment growth")),
+    (("concentration",), ("major customer", "single customer", "accounted revenue", "significant customers")),
+    (("retain", "retention"), ("customer retention", "loyal customers", "attrition", "cardmember")),
 )
 
 
@@ -280,9 +290,17 @@ def _words(text: str) -> tuple[str, ...]:
 _STOP_TERMS = frozenset(_stem(stop) for stop in _STOP_WORDS)
 
 
-def _query_terms(question: str) -> tuple[dict[str, float], tuple[str, ...]]:
+def _financial_query(question: str) -> str:
     question = re.sub(r"\bp\s*&\s*l\b", "income statement", question, flags=re.IGNORECASE)
     question = re.sub(r"\bd\s*&\s*a\b", "depreciation amortization", question, flags=re.IGNORECASE)
+    question = re.sub(r"\bm\s*&\s*a\b", "mergers acquisitions", question, flags=re.IGNORECASE)
+    question = re.sub(r"\bpp(?:ne|e)\b", "property plant equipment", question, flags=re.IGNORECASE)
+    question = re.sub(r"\bcogs\b", "cost of goods sold", question, flags=re.IGNORECASE)
+    return re.sub(r"\bcashflows?\b", "cash flow", question, flags=re.IGNORECASE)
+
+
+def _query_terms(question: str) -> tuple[dict[str, float], tuple[str, ...]]:
+    question = _financial_query(question)
     terms = tuple(word for word in _words(question) if word not in _STOP_TERMS)
     weights = dict.fromkeys(terms, 1.0)
     phrases = [" ".join(terms[index : index + 2]) for index in range(len(terms) - 1)]
@@ -332,7 +350,33 @@ def _search_pages(records: tuple[MemoryEntryRecord, ...], question: str) -> list
             for term in re.findall(r"[a-z0-9]+", page.document.casefold())
         )
     }
-    return [page for page in pages if not documents or page.document in documents]
+    matching = [page for page in pages if not documents or page.document in documents]
+    requested = _requested_reports({page.document for page in matching}, question)
+    return [page for page in matching if page.document in requested]
+
+
+def _requested_reports(documents: set[str], question: str) -> set[str]:
+    years = set(re.findall(r"(?<!\d)(?:19|20)\d{2}(?!\d)", question))
+    short_years = set(re.findall(r"\bfy\s*['\u2019]?\s*(\d{2})(?!\d)", question, flags=re.IGNORECASE))
+    periods = {document: set(re.findall(r"(?<!\d)(?:19|20)\d{2}(?!\d)", document)) for document in documents}
+    requested = {
+        document
+        for document, values in periods.items()
+        if values & years or any(year[-2:] in short_years for year in values)
+    }
+    requested = requested or documents
+    quarters = set(re.findall(r"\bq([1-4])(?!\d)", question, flags=re.IGNORECASE))
+    for number, ordinal in enumerate(("first", "second", "third", "fourth"), start=1):
+        if re.search(rf"\b{ordinal}\s+quarter\b", question, flags=re.IGNORECASE):
+            quarters.add(str(number))
+    matching_quarters = {
+        document
+        for document in requested
+        if set(re.findall(r"(?:19|20)\d{2}[_\s-]*q([1-4])(?!\d)", document, flags=re.IGNORECASE)) & quarters
+    }
+    # Only constrain by periods that the supplied identities actually expose.
+    # Opaque IDs and unavailable requested periods retain ordinary retrieval.
+    return matching_quarters or requested
 
 
 def _rank_pages(pages: list[_SearchPage], question: str) -> list[tuple[float, _SearchPage]]:
@@ -367,6 +411,8 @@ _STATEMENT_PHRASES = {
     "cash": ("statement of cash flows", "cash flow statement"),
     "balance": ("balance sheet", "statement of financial position", "statement of financial condition"),
     "legal": ("legal proceedings", "litigation", "lawsuits", "contingencies"),
+    "analysis": ("management discussion and analysis", "results of operations", "business environment"),
+    "segment": ("business segments", "segment information", "segment results"),
 }
 _REGIONS = frozenset(
     _words("Africa Asia Europe America Pacific China Canada Mexico Latin Middle East international domestic")
@@ -376,11 +422,17 @@ _REGIONS = frozenset(
 def _query_facets(question: str) -> tuple[str, ...]:
     """Identify independent evidence needs, rather than requiring all query terms on one page."""
 
+    question = _financial_query(question)
     words = set(_words(question))
     capital_intensity = "capital" in words and bool(words & set(_words("intensive intensity")))
     turnover = "inventory" in words and "turnover" in words
     facets = []
-    if capital_intensity or turnover or words & set(_words("EBITDA income earnings profit revenue sales margin")):
+    if (
+        capital_intensity
+        or turnover
+        or words & set(_words("EBITDA income earnings profit revenue sales margin"))
+        or set(_words("cost goods sold")) <= words
+    ):
         facets.append("income")
     if capital_intensity or "ebitda" in words or "capex" in words or {"cash", "flow"} <= words:
         facets.append("cash")
@@ -395,6 +447,15 @@ def _query_facets(question: str) -> tuple[str, ...]:
         facets.append("legal")
     if words & set(_words("geography geographic region country")):
         facets.append("geography")
+    if "segment" in words:
+        facets.append("segment")
+    if (
+        words & set(_words("change drove driver growth"))
+        and words & set(_words("operating margin revenue sales income segment"))
+    ) or words & set(_words("retain retention")):
+        facets.append("analysis")
+    if "customer" in words and "concentration" in words:
+        facets.append("customer")
     return tuple(facets)
 
 
@@ -407,16 +468,49 @@ def _facet_score(page: _SearchPage, facet: str) -> float:
         # of the question's geography synonyms. No company or page IDs are used.
         score = 2 * len(regions) + sum(min(page.terms[region], 2) for region in regions)
         return score + (8 if "business" in page.terms and "segment" in page.terms else 0)
-    normalized = " ".join(
-        term for term in _words(page.record.entry.text.partition("\n")[2][:600]) if term not in _STOP_TERMS
+    body = page.record.entry.text.partition("\n")[2]
+    if facet == "customer":
+        accounted = re.search(
+            r"\bcustomers?\b.{0,100}\b(?:accounted|represented|contributed)\b.{0,100}\b(?:revenue|sales)\b",
+            body,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        return 5 if accounted else 0
+    compact_body = re.sub(r"[^a-z]", "", body.casefold())
+    contents_labels = ("riskfactors", "legalproceedings", "properties", "controlsandprocedures", "financialstatements")
+    if sum(label in compact_body for label in contents_labels) >= 4:
+        return 0.1
+    heading_match = _has_statement_heading(page, body, facet)
+    if heading_match:
+        return 5 + sum(word.isdigit() for word in page.terms) / max(len(page.terms), 1)
+    phrases = tuple(
+        " ".join(term for term in _words(phrase) if term not in _STOP_TERMS) for phrase in _STATEMENT_PHRASES[facet]
     )
+    return 1 if any(phrase in page.normalized for phrase in phrases) else 0
+
+
+def _has_statement_heading(page: _SearchPage, body: str, facet: str) -> bool:
+    normalized = " ".join(term for term in _words(body[:600]) if term not in _STOP_TERMS)
     phrases = tuple(
         " ".join(term for term in _words(phrase) if term not in _STOP_TERMS) for phrase in _STATEMENT_PHRASES[facet]
     )
     heading_match = any(phrase in normalized for phrase in phrases)
-    if heading_match:
-        return 5 + sum(word.isdigit() for word in page.terms) / max(len(page.terms), 1)
-    return 1 if any(phrase in page.normalized for phrase in phrases) else 0
+    # PDF positioning can split a word even in a title (e.g. "Balance Shee t").
+    # This normalization is only for retrieval; captured page text stays exact.
+    letters = re.sub(r"[^a-z]", "", body[:600].casefold())
+    for phrase in _STATEMENT_PHRASES[facet]:
+        compact = re.sub(r"[^a-z]", "", phrase)
+        heading_match |= compact in letters or compact.replace("statement", "statements") in letters
+    if facet == "analysis":
+        heading_match |= "managementsdiscussionandanalysis" in letters
+    if facet == "segment":
+        heading_match |= "segment" in page.heading and "sale" in page.heading and "organic" in page.terms
+    for line in body.splitlines():
+        if not re.match(r"\s*Item\s+\d+[A-Z]?\s*[.:]?\s*", line, flags=re.IGNORECASE):
+            continue
+        compact_line = re.sub(r"[^a-z]", "", line.casefold())
+        heading_match |= any(re.sub(r"[^a-z]", "", phrase) in compact_line for phrase in _STATEMENT_PHRASES[facet])
+    return heading_match
 
 
 def _rank_evidence_pages(pages: list[_SearchPage], question: str) -> list[tuple[float, _SearchPage]]:

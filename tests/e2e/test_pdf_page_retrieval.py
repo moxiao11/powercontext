@@ -22,6 +22,7 @@ from pypdf import PdfWriter
 from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
 from powercontext.builtin.artifacts.memory import MemoryEntryInput
+from powercontext.builtin.artifacts.memory.errors import InvalidMemoryCandidateError, InvalidMemoryEvidenceError
 from powercontext.builtin.persistence.sqlite import SQLiteConfig
 from powercontext.builtin.runtime import (
     BuiltinConfig,
@@ -162,7 +163,9 @@ async def test_retrieval_covers_statement_and_region_evidence_among_many_keyword
     distractors = tuple(
         f"Administrative exhibit {number}. {boilerplate} "
         "The unadjusted EBITDA analysis references the income statement and cash flow statement. "
-        "Geographies and regions, countries, domestic and international markets are discussed elsewhere."
+        "Geographies and regions, countries, domestic and international markets are discussed elsewhere. "
+        "Table of Contents. Risk Factors. Legal Proceedings. Properties. Controls and Procedures. Financial Statements. "
+        "Customer concentration and operating margin are discussed elsewhere."
         for number in range(30)
     )
     evidence = (
@@ -170,8 +173,11 @@ async def test_retrieval_covers_statement_and_region_evidence_among_many_keyword
         "Consolidated Statements of Cash Flows. Depreciation and amortization 20. Capital expenditures 40.",
         "Our business is organized into reportable segments across North America, Latin America and Europe.",
         "Our Asia Pacific and Africa business comprises another segment with manufacturing and distribution.",
-        "Consolidated Balance Sheets. Current assets 250, including cash 70, receivables 80 and inventory 100. "
+        "Consolidated Balance Shee t. Current assets 250, including cash 70, receivables 80 and inventory 100. "
         "Current liabilities 120. Property, plant and equipment 600. Total assets 900.",
+        "Property descriptions and facilities. " * 50 + "\nItem 3. Legal Proceedings.\nMaterial litigation is pending.",
+        "One customer accounted for 19% of consolidated revenue. Losing this customer would reduce sales.",
+        "Management's Discussion and Analysis. The operating margin change reflects higher material costs.",
     )
     registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
     pages = parse_pdf_document(
@@ -202,6 +208,12 @@ async def test_retrieval_covers_statement_and_region_evidence_among_many_keyword
             (f"Does {company} have a healthy liquidity profile based on its quick ratio?", {35}),
             (f"Is {company} a capital-intensive business?", {31, 32, 35}),
             (f"Calculate the inventory turnover of {company}.", {31, 35}),
+            (f"What is the net PPNE for {company} according to its balance sheet?", {35}),
+            (f"Does {company} have improving free cashflow conversion?", {32}),
+            (f"Calculate {company} DPO using COGS and the balance sheet.", {31, 35}),
+            (f"Has {company} reported material ongoing legal battles?", {36}),
+            (f"Does {company} have customer concentration?", {37}),
+            (f"What drove operating margin change for {company}?", {38}),
         ):
             citations = await search_pdf_pages(memory, question, limit=20)
             found = set()
@@ -210,3 +222,94 @@ async def test_retrieval_covers_statement_and_region_evidence_among_many_keyword
                 found.update(locations[source.source_id] for source in entry.sources)
             assert len(citations) <= 20 and len(citations) == len(found)
             assert required <= found
+
+
+@pytest.mark.parametrize(
+    "earlier,current,period",
+    [
+        ("2023", "2024", "FY2024"),
+        ("2023", "2024", "FY24"),
+        ("2024Q1", "2024Q2", "FY2024 Q2"),
+        ("2024Q1", "2024Q2", "the second quarter of 2024"),
+    ],
+)
+async def test_query_period_distinguishes_reports_of_the_same_company(
+    tmp_path: Path, earlier: str, current: str, period: str
+) -> None:
+    registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
+    documents = (
+        (
+            f"ORBIT_{earlier}_REPORT",
+            "Consolidated Statements of Income. Operating income 10. Operating income 11. Operating income 12.",
+        ),
+        (f"ORBIT_{current}_REPORT", "Consolidated Statements of Income. Operating income 130. Net sales 900."),
+    )
+    config = BuiltinConfig(database=SQLiteConfig(url=f"sqlite+aiosqlite:///{tmp_path / 'years.db'}"))
+    locations = {}
+    async with open_builtin_runtime(config, candidate_pipeline=_EvidencePipeline()) as runtime:
+        assert runtime.scopes is not None
+        scope = await runtime.scopes.create(ScopeDraft(title="Reports", summary="Years", idempotency_key="years"))
+        await runtime.ingestion.register(manifest_for_definition(PDF_PAGE_SOURCE_DEFINITION))
+        for document, text in documents:
+            for page in parse_pdf_document(PDFDocumentInput(document_id=document, content=_pdf((text,)))):
+                observation = project_source_for_transport(registry, await registry.resolve(page))
+                locations[observation.name] = document
+                await runtime.ingestion.submit(
+                    SubmitSourceObservation(scope_id=scope.scope_id, observation=observation)
+                )
+        while (await runtime.memory.for_scope(scope.scope_id).flush()).processed:
+            pass
+    async with open_builtin_runtime(config) as runtime:
+        memory = runtime.memory.for_scope(scope.scope_id)
+        citations = await search_pdf_pages(memory, f"What was ORBIT operating income in {period}?", limit=1)
+        assert len(citations) == 1
+        entry = (await memory.get(GetMemoryEntryRequest(citation=citations[0]))).entry
+        assert {locations[source.source_id] for source in entry.sources} == {f"ORBIT_{current}_REPORT"}
+
+
+async def test_dense_pdf_page_exceeding_memory_body_limit_survives_restart_and_index_rebuild(tmp_path: Path) -> None:
+    body = "Warranty commitments and reserves 12345. " * 500 + "Exact final evidence: cobalt obligation 6789."
+    document = "AURORA_2025_10K"
+    pages = parse_pdf_document(PDFDocumentInput(document_id=document, content=_pdf((body, "", "Net income 900."))))
+    original = f"{document}\n{pages[0].text}".strip()
+    assert len(original.encode()) > 8192
+    registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
+    config = BuiltinConfig(database=SQLiteConfig(url=f"sqlite+aiosqlite:///{tmp_path / 'dense.db'}"))
+    async with open_builtin_runtime(config, candidate_pipeline=_EvidencePipeline()) as runtime:
+        assert runtime.scopes is not None
+        scope = await runtime.scopes.create(ScopeDraft(title="Dense pages", summary="PDF", idempotency_key="dense"))
+        await runtime.ingestion.register(manifest_for_definition(PDF_PAGE_SOURCE_DEFINITION))
+        captured: list[SourceObservation] = []
+        for page in pages:
+            observation = project_source_for_transport(registry, await registry.resolve(page))
+            captured.append(observation)
+            await runtime.ingestion.submit(SubmitSourceObservation(scope_id=scope.scope_id, observation=observation))
+        memory = runtime.memory.for_scope(scope.scope_id)
+        while (await memory.flush()).processed:
+            pass
+        with pytest.raises(InvalidMemoryCandidateError, match="8192"):
+            await memory.remember(RememberMemoryRequest(entries=(MemoryEntryInput(kind="fact", text=original),)))
+        with pytest.raises(InvalidMemoryEvidenceError):
+            await memory.remember(
+                RememberMemoryRequest(entries=(MemoryEntryInput(kind="fact", text=original, sources=(captured[0],)),))
+            )
+    async with open_builtin_contexts(config) as contexts:
+        await (await contexts.get(scope.scope_id)).artifacts.memory.rebuild_projections()
+        journal = await (await contexts.get(scope.scope_id)).sources.journal.entries()
+        stored = {item.source_ref.source_id: item.source for item in journal}
+    async with open_builtin_runtime(config) as runtime:
+        memory = runtime.memory.for_scope(scope.scope_id)
+        citations = await search_pdf_pages(memory, "AURORA cobalt obligation", limit=1)
+        assert len(citations) == 1
+        entry = (await memory.get(GetMemoryEntryRequest(citation=citations[0]))).entry
+        assert entry.text == original
+        assert entry.sources
+        source = stored[entry.sources[0].source_id]
+        assert isinstance(source, SourceObservation)
+        evidence = TextEvidence.model_validate(source.projection(TEXT_EVIDENCE_PROJECTION_KEY))
+        assert evidence.content.strip() == original
+        assert evidence.metadata == {
+            "document_id": document,
+            "document_sha256": pages[0].document_sha256,
+            "page_number": 1,
+        }

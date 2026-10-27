@@ -78,11 +78,18 @@ def canonical_json(value: object) -> bytes:
     return rfc8785.dumps(_validated_json(value))
 
 
-def normalize_text(value: str) -> str:
-    """Normalize and validate one durable entry body."""
+def normalize_text(value: str, *, source_refs: Sequence[object] = ()) -> str:
+    """Normalize a durable body, retaining complete page-backed PDF evidence.
+
+    Ordinary Memory entries retain their existing 8 KiB limit. A captured PDF
+    page has an indivisible physical-page boundary; its source-backed body must
+    survive the same canonical encoding at write, read and projection rebuild.
+    Source authorization remains the owning service's responsibility.
+    """
 
     normalized = _normalize_non_empty_string(value, "memory entry text")
-    if len(normalized.encode("utf-8")) > 8192:
+    pdf_page = any(isinstance(ref, Mapping) and ref.get("source_type") == "pdf-page" for ref in source_refs)
+    if not pdf_page and len(normalized.encode("utf-8")) > 8192:
         raise _CanonicalValueError("text-too-long")
     return normalized
 
@@ -158,10 +165,11 @@ def entry_content_bytes(
 ) -> bytes:
     """Return canonical content bytes for an immutable entry version."""
 
+    normalized_sources = normalize_refs(source_refs)
     return canonical_json({
         "kind": normalize_kind(kind),
-        "text": normalize_text(text),
-        "source_refs": normalize_refs(source_refs),
+        "text": normalize_text(text, source_refs=normalized_sources),
+        "source_refs": normalized_sources,
         "artifact_refs": normalize_refs(artifact_refs),
     })
 
