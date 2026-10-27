@@ -1,0 +1,3 @@
+* text=auto eol=lf
+# Preserve original run evidence byte-for-byte, including Windows logs and hashes.
+evidence/** -text -whitespace

@@ -1,0 +1,53 @@
+{
+  "project_id": "taskboard-reference-231a6d87a43e",
+  "spec_file": "specs/requirements.json",
+  "sources": [
+    {
+      "path": "taskboard.py",
+      "kind": "code",
+      "tags": [
+        "taskboard",
+        "status",
+        "filter",
+        "pagination"
+      ],
+      "links": [
+        "test:tests/test_target.py",
+        "test:tests/test_regression.py"
+      ]
+    },
+    {
+      "path": "tests/test_target.py",
+      "kind": "test",
+      "tags": [
+        "taskboard",
+        "status",
+        "filter"
+      ],
+      "links": [
+        "code:taskboard.py"
+      ]
+    },
+    {
+      "path": "tests/test_regression.py",
+      "kind": "test",
+      "tags": [
+        "taskboard",
+        "pagination",
+        "compatibility"
+      ],
+      "links": [
+        "code:taskboard.py"
+      ]
+    },
+    {
+      "path": "tests/conftest.py",
+      "kind": "test",
+      "tags": [
+        "taskboard",
+        "fixtures"
+      ],
+      "links": []
+    }
+  ]
+}

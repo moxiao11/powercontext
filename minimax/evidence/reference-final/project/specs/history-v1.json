@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "requirements": [
+    {"id": "REQ-STATUS", "status": "active", "tags": ["taskboard", "status", "filter"], "content": "旧版规格：status 只允许 todo 和 done；先筛选，再分页。此文件仅用于演示升级到当前规格。", "links": ["code:taskboard.py", "test:tests/test_target.py"]},
+    {"id": "ADR-LEGACY", "status": "active", "tags": ["taskboard", "status"], "content": "旧决策：忽略 status 参数，始终返回全部任务。", "links": []}
+  ]
+}

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="5" failures="0" skipped="0" tests="25" time="14.264" timestamp="2026-10-27T22:59:45.927208+08:00" hostname="LAPTOP-V5K4E96F"><testcase classname="tests.test_unit" name="test_ingest_real_sources_and_symbols" time="0.125" /><testcase classname="tests.test_unit" name="test_idempotent_collection" time="0.078" /><testcase classname="tests.test_unit" name="test_source_boundaries[../escape.py]" time="0.018" /><testcase classname="tests.test_unit" name="test_source_boundaries[missing.py]" time="0.017" /><testcase classname="tests.test_unit" name="test_reject_duplicate_requirements" time="0.065" /><testcase classname="tests.test_unit" name="test_reject_missing_links" time="0.064" /><testcase classname="tests.test_unit" name="test_fingerprint_changes_with_spec_code_and_tests" time="0.219" /><testcase classname="tests.test_unit" name="test_empty_state_requires_work" time="0.001" /><testcase classname="tests.test_unit" name="test_current_state_controls_next_step" time="0.000" /><testcase classname="tests.test_unit" name="test_stale_state_requires_revalidation" time="0.001" /><testcase classname="tests.test_unit" name="test_failed_checks_are_not_current_validation" time="0.000" /><testcase classname="tests.test_unit" name="test_parse_model_edit[-]" time="0.001" /><testcase classname="tests.test_unit" name="test_parse_model_edit[```json\n-\n```]" time="0.001" /><testcase classname="tests.test_unit" name="test_parse_model_edit[&lt;think&gt;private reasoning&lt;/think&gt;-]" time="0.001" /><testcase classname="tests.test_unit" name="test_model_cannot_edit_outside_allowed_implementation[tests/test_target.py]" time="0.001" /><testcase classname="tests.test_unit" name="test_model_cannot_edit_outside_allowed_implementation[../escape.py]" time="0.001" /><testcase classname="tests.test_unit" name="test_model_cannot_edit_outside_allowed_implementation[/etc/passwd]" time="0.001" /><testcase classname="tests.test_unit" name="test_invalid_model_python_rejected" time="0.008" /><testcase classname="tests.test_unit" name="test_missing_credentials_never_fall_back_to_reference" time="0.016" /><testcase classname="tests.test_unit" name="test_database_name_is_not_interpolated_unchecked" time="0.001" /><testcase classname="tests.test_integration" name="test_current_context_and_project_isolation" time="2.151"><error message="failed on setup with &quot;pymysql.err.OperationalError: (2003, &quot;Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)&quot;)&quot;">.venv\Lib\site-packages\pymysql\connections.py:682: in connect
+    sock = socket.create_connection(
+D:\anaconda\Lib\socket.py:864: in create_connection
+    raise exceptions[0]
+D:\anaconda\Lib\socket.py:849: in create_connection
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+tests\test_integration.py:19: in indexed
+    store.initialize()
+sdd_context\store.py:33: in initialize
+    with pymysql.connect(**self.config, autocommit=True) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\pymysql\connections.py:372: in __init__
+    self.connect()
+.venv\Lib\site-packages\pymysql\connections.py:744: in connect
+    raise exc
+E   pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")</error></testcase><testcase classname="tests.test_integration" name="test_idempotent_import_and_revision_update" time="2.138"><error message="failed on setup with &quot;pymysql.err.OperationalError: (2003, &quot;Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)&quot;)&quot;">.venv\Lib\site-packages\pymysql\connections.py:682: in connect
+    sock = socket.create_connection(
+D:\anaconda\Lib\socket.py:864: in create_connection
+    raise exceptions[0]
+D:\anaconda\Lib\socket.py:849: in create_connection
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+tests\test_integration.py:19: in indexed
+    store.initialize()
+sdd_context\store.py:33: in initialize
+    with pymysql.connect(**self.config, autocommit=True) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\pymysql\connections.py:372: in __init__
+    self.connect()
+.venv\Lib\site-packages\pymysql\connections.py:744: in connect
+    raise exc
+E   pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")</error></testcase><testcase classname="tests.test_integration" name="test_deleted_specs_are_deactivated" time="2.124"><error message="failed on setup with &quot;pymysql.err.OperationalError: (2003, &quot;Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)&quot;)&quot;">.venv\Lib\site-packages\pymysql\connections.py:682: in connect
+    sock = socket.create_connection(
+D:\anaconda\Lib\socket.py:864: in create_connection
+    raise exceptions[0]
+D:\anaconda\Lib\socket.py:849: in create_connection
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+tests\test_integration.py:19: in indexed
+    store.initialize()
+sdd_context\store.py:33: in initialize
+    with pymysql.connect(**self.config, autocommit=True) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\pymysql\connections.py:372: in __init__
+    self.connect()
+.venv\Lib\site-packages\pymysql\connections.py:744: in connect
+    raise exc
+E   pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")</error></testcase><testcase classname="tests.test_integration" name="test_changed_source_requires_reimport" time="2.143"><error message="failed on setup with &quot;pymysql.err.OperationalError: (2003, &quot;Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)&quot;)&quot;">.venv\Lib\site-packages\pymysql\connections.py:682: in connect
+    sock = socket.create_connection(
+D:\anaconda\Lib\socket.py:864: in create_connection
+    raise exceptions[0]
+D:\anaconda\Lib\socket.py:849: in create_connection
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+tests\test_integration.py:19: in indexed
+    store.initialize()
+sdd_context\store.py:33: in initialize
+    with pymysql.connect(**self.config, autocommit=True) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\pymysql\connections.py:372: in __init__
+    self.connect()
+.venv\Lib\site-packages\pymysql\connections.py:744: in connect
+    raise exc
+E   pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")</error></testcase><testcase classname="tests.test_integration" name="test_powercontext_roundtrip_and_no_local_state_copy" time="2.129"><error message="failed on setup with &quot;pymysql.err.OperationalError: (2003, &quot;Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)&quot;)&quot;">.venv\Lib\site-packages\pymysql\connections.py:682: in connect
+    sock = socket.create_connection(
+D:\anaconda\Lib\socket.py:864: in create_connection
+    raise exceptions[0]
+D:\anaconda\Lib\socket.py:849: in create_connection
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+tests\test_integration.py:19: in indexed
+    store.initialize()
+sdd_context\store.py:33: in initialize
+    with pymysql.connect(**self.config, autocommit=True) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\pymysql\connections.py:372: in __init__
+    self.connect()
+.venv\Lib\site-packages\pymysql\connections.py:744: in connect
+    raise exc
+E   pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")</error></testcase></testsuite></testsuites>

@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "requirements": [
+    {
+      "id": "REQ-STATUS", "status": "active",
+      "tags": ["taskboard", "status", "filter", "任务", "筛选"],
+      "content": "任务列表增加 status 筛选。允许 todo、doing、done 三种状态，非法值（包括空字符串）抛出 ValueError。status=None 表示不筛选。先筛选，再按 id 升序排列，最后执行 offset/limit 分页。",
+      "links": ["code:taskboard.py", "test:tests/test_target.py", "test:tests/conftest.py"]
+    },
+    {
+      "id": "REQ-COMPAT", "status": "active",
+      "tags": ["taskboard", "pagination", "compatibility", "回归"],
+      "content": "保持既有行为：不传 status 时返回全部任务，按 id 升序；offset 默认 0，limit 默认 20。offset<0 或 limit<=0 抛出 ValueError。空列表返回 []。不得修改输入列表或其中的字典；输出为字典副本。",
+      "links": ["code:taskboard.py", "test:tests/test_regression.py"]
+    },
+    {
+      "id": "ADR-LEGACY", "status": "superseded",
+      "tags": ["taskboard", "status"],
+      "content": "已失效的旧决策：忽略 status 参数，始终返回全部任务。不得将本条作为当前约束。",
+      "links": []
+    },
+    {
+      "id": "REQ-BILLING", "status": "active",
+      "tags": ["billing", "invoice"],
+      "content": "发票金额使用整数分存储。此条与任务列表筛选无关。",
+      "links": []
+    }
+  ]
+}

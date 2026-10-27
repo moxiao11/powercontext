@@ -1,0 +1,103 @@
+{
+  "schema": "sdd.acceptance.v1",
+  "run_id": "taskboard-reference-54909dd0987f",
+  "timestamp": "2026-10-27T14:35:24.060668+00:00",
+  "mode": "reference",
+  "output": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference",
+  "project_id": "taskboard-reference-54909dd0987f",
+  "versions": {
+    "powercontext": "1.4.1",
+    "PyMySQL": "1.2.0",
+    "pytest": "8.4.2",
+    "httpx": "0.28.1"
+  },
+  "acceptance": {
+    "runnable": "passed",
+    "minimax_actual_participation": "blocked_no_credentials",
+    "context_correct_and_updates": "passed",
+    "database_actual_participation": "passed",
+    "powercontext_state_reused": "passed",
+    "code_change_valid": "passed"
+  },
+  "implementation_checks_passed": true,
+  "all_six_passed": false,
+  "submission_ready": false,
+  "target_before": {
+    "command": [
+      "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_target.py",
+      "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference\\target-before.xml"
+    ],
+    "cwd": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference\\project",
+    "timestamp": "2026-10-27T14:35:10.200708+00:00",
+    "exit_code": 1,
+    "code_sha256": "b222f0b7340032e48941d16e9c9f2a9155c44d24fe267a83fc219b2fe68ca5ab",
+    "test_sha256": "1511dabc3425dbef244056760898c7d56e73f72b9014a0f02c1a16dd5c0983a5",
+    "project_fingerprint": "45c449b87b4e2bd32bf96e3bdfed8b0ea595533d288dd9785f9280ccf7531ebb",
+    "tests": 9,
+    "failures": 8,
+    "errors": 0,
+    "skipped": 0
+  },
+  "target_after": {
+    "command": [
+      "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_target.py",
+      "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference\\target-after-1.xml"
+    ],
+    "cwd": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference\\project",
+    "timestamp": "2026-10-27T14:35:14.468652+00:00",
+    "exit_code": 0,
+    "code_sha256": "b365332220ccbede1a7524c2c70c964b2132f71cbccf21e45d4b6888f0371dc2",
+    "test_sha256": "1511dabc3425dbef244056760898c7d56e73f72b9014a0f02c1a16dd5c0983a5",
+    "project_fingerprint": "968079aa5842c7f34ac32c4b125902a4c7ad293ea92999dd05576f55bd6587f0",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "regression_after": {
+    "command": [
+      "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_regression.py",
+      "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference\\regression-after-1.xml"
+    ],
+    "cwd": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference\\project",
+    "timestamp": "2026-10-27T14:35:15.431299+00:00",
+    "exit_code": 0,
+    "code_sha256": "b365332220ccbede1a7524c2c70c964b2132f71cbccf21e45d4b6888f0371dc2",
+    "test_sha256": "5926814b18ec955b945a978f49e450077e7984c7535e6ea362a1ef303e7aa6c0",
+    "project_fingerprint": "968079aa5842c7f34ac32c4b125902a4c7ad293ea92999dd05576f55bd6587f0",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "state_update_invalidates_validation": true,
+  "source_expectations": [
+    "code:taskboard.py",
+    "spec:REQ-COMPAT",
+    "spec:REQ-STATUS",
+    "test:tests/conftest.py",
+    "test:tests/test_regression.py",
+    "test:tests/test_target.py"
+  ],
+  "limitations": [
+    "Local reference code is NOT evidence of MiniMax involvement. Configure a real key and run --mode live before submission."
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "project_id": "taskboard-reference-1a73d99e544f",
+  "snapshot_sha256": "7989d27767e696da618e0b9abffdd8b774735168b432fbe7f24c2126f8a1481a",
+  "changed": [
+    {
+      "doc_id": "spec:REQ-STATUS",
+      "revision": 3
+    },
+    {
+      "doc_id": "spec:REQ-COMPAT",
+      "revision": 2
+    },
+    {
+      "doc_id": "spec:ADR-LEGACY",
+      "revision": 3
+    },
+    {
+      "doc_id": "spec:REQ-BILLING",
+      "revision": 2
+    }
+  ],
+  "document_count": 8,
+  "unchanged": false
+}

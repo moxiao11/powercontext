@@ -1,0 +1,107 @@
+{
+  "schema": "sdd.acceptance.v1",
+  "run_id": "taskboard-reference-1a73d99e544f",
+  "timestamp": "2026-10-27T15:03:32.478630+00:00",
+  "mode": "reference",
+  "output": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference-final",
+  "project_id": "taskboard-reference-1a73d99e544f",
+  "versions": {
+    "powercontext": "1.4.1",
+    "PyMySQL": "1.2.0",
+    "pytest": "8.4.2",
+    "httpx": "0.28.1"
+  },
+  "database_version": "5.7.25-OceanBase seekdb-v1.4.0.0",
+  "acceptance": {
+    "runnable": "passed",
+    "minimax_actual_participation": "blocked_no_credentials",
+    "context_correct_and_updates": "passed",
+    "database_actual_participation": "passed",
+    "powercontext_state_reused": "passed",
+    "code_change_valid": "passed"
+  },
+  "implementation_checks_passed": true,
+  "all_six_passed": false,
+  "submission_ready": false,
+  "target_before": {
+    "command": [
+      "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_target.py",
+      "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference-final\\target-before.xml"
+    ],
+    "cwd": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference-final\\project",
+    "timestamp": "2026-10-27T15:03:18.234863+00:00",
+    "exit_code": 1,
+    "code_sha256": "b222f0b7340032e48941d16e9c9f2a9155c44d24fe267a83fc219b2fe68ca5ab",
+    "test_sha256": "1511dabc3425dbef244056760898c7d56e73f72b9014a0f02c1a16dd5c0983a5",
+    "test_tree_sha256": "8241d1b2d0251be9d6707f28a09708c023c1422b37fc81195ad2fe4014b95863",
+    "project_fingerprint": "5ee044d791bc439390f090d4db7a80c7440c81c68b98b9bfebec617e677687bf",
+    "tests": 9,
+    "failures": 8,
+    "errors": 0,
+    "skipped": 0
+  },
+  "target_after": {
+    "command": [
+      "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_target.py",
+      "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference-final\\target-after-1.xml"
+    ],
+    "cwd": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference-final\\project",
+    "timestamp": "2026-10-27T15:03:22.847693+00:00",
+    "exit_code": 0,
+    "code_sha256": "b365332220ccbede1a7524c2c70c964b2132f71cbccf21e45d4b6888f0371dc2",
+    "test_sha256": "1511dabc3425dbef244056760898c7d56e73f72b9014a0f02c1a16dd5c0983a5",
+    "test_tree_sha256": "8241d1b2d0251be9d6707f28a09708c023c1422b37fc81195ad2fe4014b95863",
+    "project_fingerprint": "41fd1a29ad81ff19fc16de494093d80245c7eb199fb73c2b345f697fb50325c8",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "regression_after": {
+    "command": [
+      "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_regression.py",
+      "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference-final\\regression-after-1.xml"
+    ],
+    "cwd": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference-final\\project",
+    "timestamp": "2026-10-27T15:03:23.868777+00:00",
+    "exit_code": 0,
+    "code_sha256": "b365332220ccbede1a7524c2c70c964b2132f71cbccf21e45d4b6888f0371dc2",
+    "test_sha256": "5926814b18ec955b945a978f49e450077e7984c7535e6ea362a1ef303e7aa6c0",
+    "test_tree_sha256": "8241d1b2d0251be9d6707f28a09708c023c1422b37fc81195ad2fe4014b95863",
+    "project_fingerprint": "41fd1a29ad81ff19fc16de494093d80245c7eb199fb73c2b345f697fb50325c8",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "state_update_invalidates_validation": true,
+  "source_expectations": [
+    "code:taskboard.py",
+    "spec:REQ-COMPAT",
+    "spec:REQ-STATUS",
+    "test:tests/conftest.py",
+    "test:tests/test_regression.py",
+    "test:tests/test_target.py"
+  ],
+  "limitations": [
+    "Local reference code is NOT evidence of MiniMax involvement. Configure a real key and run --mode live before submission."
+  ]
+}

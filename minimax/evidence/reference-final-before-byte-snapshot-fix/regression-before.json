@@ -1,0 +1,23 @@
+{
+  "command": [
+    "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "tests/test_regression.py",
+    "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference-final\\regression-before.xml"
+  ],
+  "cwd": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\reference-final\\project",
+  "timestamp": "2026-10-27T15:03:19.260745+00:00",
+  "exit_code": 0,
+  "code_sha256": "b222f0b7340032e48941d16e9c9f2a9155c44d24fe267a83fc219b2fe68ca5ab",
+  "test_sha256": "5926814b18ec955b945a978f49e450077e7984c7535e6ea362a1ef303e7aa6c0",
+  "test_tree_sha256": "8241d1b2d0251be9d6707f28a09708c023c1422b37fc81195ad2fe4014b95863",
+  "project_fingerprint": "5ee044d791bc439390f090d4db7a80c7440c81c68b98b9bfebec617e677687bf",
+  "tests": 10,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0
+}

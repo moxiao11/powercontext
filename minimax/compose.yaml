@@ -1,0 +1,15 @@
+services:
+  seekdb:
+    # Use the official image. Pin SEEKDB_IMAGE to a digest in the final judge environment.
+    image: ${SEEKDB_IMAGE:-oceanbase/seekdb:latest}
+    ports:
+      - "127.0.0.1:12890:2881"
+    environment:
+      ROOT_PASSWORD: ${SDD_DB_PASSWORD:-}
+      MEMORY_LIMIT: 2G
+    volumes:
+      - seekdb-data:/var/lib/seekdb
+      - seekdb-legacy-data:/var/lib/oceanbase
+volumes:
+  seekdb-data:
+  seekdb-legacy-data:

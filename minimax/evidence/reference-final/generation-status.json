@@ -1,0 +1,6 @@
+{
+  "provider": "local-reference",
+  "live": false,
+  "minimax_participation": false,
+  "reason": "No MiniMax credentials. This run verifies implementation, not model participation."
+}

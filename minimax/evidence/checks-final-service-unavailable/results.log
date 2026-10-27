@@ -1,0 +1,110 @@
+....................EEEEE                                                [100%]
+=================================== ERRORS ====================================
+________ ERROR at setup of test_current_context_and_project_isolation _________
+.venv\Lib\site-packages\pymysql\connections.py:682: in connect
+    sock = socket.create_connection(
+D:\anaconda\Lib\socket.py:864: in create_connection
+    raise exceptions[0]
+D:\anaconda\Lib\socket.py:849: in create_connection
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+tests\test_integration.py:19: in indexed
+    store.initialize()
+sdd_context\store.py:33: in initialize
+    with pymysql.connect(**self.config, autocommit=True) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\pymysql\connections.py:372: in __init__
+    self.connect()
+.venv\Lib\site-packages\pymysql\connections.py:744: in connect
+    raise exc
+E   pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")
+________ ERROR at setup of test_idempotent_import_and_revision_update _________
+.venv\Lib\site-packages\pymysql\connections.py:682: in connect
+    sock = socket.create_connection(
+D:\anaconda\Lib\socket.py:864: in create_connection
+    raise exceptions[0]
+D:\anaconda\Lib\socket.py:849: in create_connection
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+tests\test_integration.py:19: in indexed
+    store.initialize()
+sdd_context\store.py:33: in initialize
+    with pymysql.connect(**self.config, autocommit=True) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\pymysql\connections.py:372: in __init__
+    self.connect()
+.venv\Lib\site-packages\pymysql\connections.py:744: in connect
+    raise exc
+E   pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")
+____________ ERROR at setup of test_deleted_specs_are_deactivated _____________
+.venv\Lib\site-packages\pymysql\connections.py:682: in connect
+    sock = socket.create_connection(
+D:\anaconda\Lib\socket.py:864: in create_connection
+    raise exceptions[0]
+D:\anaconda\Lib\socket.py:849: in create_connection
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+tests\test_integration.py:19: in indexed
+    store.initialize()
+sdd_context\store.py:33: in initialize
+    with pymysql.connect(**self.config, autocommit=True) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\pymysql\connections.py:372: in __init__
+    self.connect()
+.venv\Lib\site-packages\pymysql\connections.py:744: in connect
+    raise exc
+E   pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")
+___________ ERROR at setup of test_changed_source_requires_reimport ___________
+.venv\Lib\site-packages\pymysql\connections.py:682: in connect
+    sock = socket.create_connection(
+D:\anaconda\Lib\socket.py:864: in create_connection
+    raise exceptions[0]
+D:\anaconda\Lib\socket.py:849: in create_connection
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+tests\test_integration.py:19: in indexed
+    store.initialize()
+sdd_context\store.py:33: in initialize
+    with pymysql.connect(**self.config, autocommit=True) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\pymysql\connections.py:372: in __init__
+    self.connect()
+.venv\Lib\site-packages\pymysql\connections.py:744: in connect
+    raise exc
+E   pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")
+____ ERROR at setup of test_powercontext_roundtrip_and_no_local_state_copy ____
+.venv\Lib\site-packages\pymysql\connections.py:682: in connect
+    sock = socket.create_connection(
+D:\anaconda\Lib\socket.py:864: in create_connection
+    raise exceptions[0]
+D:\anaconda\Lib\socket.py:849: in create_connection
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+tests\test_integration.py:19: in indexed
+    store.initialize()
+sdd_context\store.py:33: in initialize
+    with pymysql.connect(**self.config, autocommit=True) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\pymysql\connections.py:372: in __init__
+    self.connect()
+.venv\Lib\site-packages\pymysql\connections.py:744: in connect
+    raise exc
+E   pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '127.0.0.1' ([WinError 10061] 由于目标计算机积极拒绝，无法连接。)")
+- generated xml file: D:\oceanbase\powercontext-minimax\minimax\evidence\checks-final\results.xml -
+=========================== short test summary info ===========================
+ERROR tests/test_integration.py::test_current_context_and_project_isolation
+ERROR tests/test_integration.py::test_idempotent_import_and_revision_update
+ERROR tests/test_integration.py::test_deleted_specs_are_deactivated - pymysql...
+ERROR tests/test_integration.py::test_changed_source_requires_reimport - pymy...
+ERROR tests/test_integration.py::test_powercontext_roundtrip_and_no_local_state_copy
+20 passed, 5 errors in 14.37s
