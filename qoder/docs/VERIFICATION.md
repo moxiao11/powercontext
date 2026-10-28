@@ -65,12 +65,12 @@ python -m pytest -q
 - 12 项不带 Cookie / Authorization 的 HTTP 检查通过；CSS 首次连接超时后重试通过，原始记录保留两次结果，见 `evidence/site-anonymous-2026-10-28.json`。
 - Windows Docker Desktop socket 故障恢复后，四个容器 healthy，seekdb / PowerContext 可用，原项目保留 3 篇资料、4 条实验和 8 条记忆，见 `evidence/docker-recovery-2026-10-28.json`。
 - Qoder 原对话截图、账号 ID 和发布界面已归档，见 `QODER_DEVELOPMENT_LOG.md`。
+- 已通过本机 SSH 密钥向 `moxiao11/powercontext` 的 `2026-competition-ecosystem` 分支推送，远端与本地 hash 核对一致；提交表单使用最新已推送的完整 hash。
 
 ## 未完成或未验证
 
 - 未配置真实模型 / Embedding API；生成式回答和语义检索质量未验证。当前明确标注哈希向量与证据摘录。
 - 未验证 PowerContext 的自动抽取 / Topic Memory / Profile。显式 Memory 与 Handoff 不依赖这些能力。
-- 报名仓库为 `https://github.com/moxiao11/powercontext`，使用本地 `competition` 远端；GitHub 写入检查返回 403，用户选择稍后授权，代码仍未推送。
 - 知识关联图未实现；不影响核心 A–D。
 - 无生产级多用户鉴权、并发压测、真实用户效果数据；当前为本地单用户工作台。
 

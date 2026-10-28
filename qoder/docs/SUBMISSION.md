@@ -12,7 +12,7 @@ React 工作台、FastAPI 后端、seekdb 检索与实验记录、PowerContext M
 
 | 材料 | 状态与操作 |
 | --- | --- |
-| 比赛仓库 | `https://github.com/moxiao11/powercontext`；推送检查返回 403，用户选择稍后处理写入授权，本地代码尚未推送 |
+| 比赛仓库 | `https://github.com/moxiao11/powercontext`；已使用 SSH 推送比赛分支，并核对远端 commit |
 | Qoder Sites URL | https://labtrace-research-186qw7bzjxs.qoder.zone/ ，已发布，任何人都可访问 |
 | Qoder UID / 账号 ID | 已从 Qoder 设置 → 个人资料 → 编辑只读获取，见 QODER_DEVELOPMENT_LOG.md |
 | Qoder 主要开发记录 | 用户提供的对话文本及原任务变更、验证截图均已归档，详见 QODER_DEVELOPMENT_LOG.md |
@@ -94,7 +94,8 @@ git ls-remote competition refs/heads/2026-competition-ecosystem
 
 后两条的 hash 应一致。已有报名分支包含其他赛道提交，合并时应保留，勿强制推送覆盖。
 
-当前 GitHub 写入检查返回 403；用户已选择稍后授权。先完成 Git 客户端写入授权，再推送与核对。
-不要在评测平台填写仅存在本机的 commit。
+HTTPS 凭据曾返回 403；改用本机已有 SSH 密钥后，认证账号为 `moxiao11`，推送成功。
+本地 `competition` 远端已改为 `git@github.com:moxiao11/powercontext.git`。
+提交前仍需核对最新 HEAD 与远端分支一致，不要填写仅存在本机的 commit。
 
 “作品链接”尚未获得时，先按 [Qoder Sites 操作提示](QODER_SITES_PROMPT.md) 发布展示站，再回表单提交。
