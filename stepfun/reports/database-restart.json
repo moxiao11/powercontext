@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-28T08:25:51.145Z",
+  "passed": true,
+  "checks": [
+    "Same API process reconnects after seekdb restart",
+    "Collection IDs, document/chunk counts and refresh generations retained"
+  ],
+  "database": "5.7.25-OceanBase seekdb-v1.4.0.0",
+  "bases": [
+    {
+      "id": "tide_8149ea6c4c53415b86f9daba6e20be2c",
+      "count": 16,
+      "documents": 16,
+      "generation": 1,
+      "refreshedGeneration": 1
+    },
+    {
+      "id": "tide_e782e006eba146c5b8f18e597dae4a9e",
+      "count": 2,
+      "documents": 2,
+      "generation": 3,
+      "refreshedGeneration": 3
+    },
+    {
+      "id": "tide_e83671ff435349e58b6ebf9190158363",
+      "count": 0,
+      "documents": 0,
+      "generation": 0,
+      "refreshedGeneration": 0
+    }
+  ]
+}

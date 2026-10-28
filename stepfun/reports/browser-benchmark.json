@@ -1,0 +1,4334 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "startedAt": "2026-10-28T08:29:52.488Z",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+    "hardwareConcurrency": 24,
+    "deviceMemory": 16,
+    "device": "Intel Core i7-14650HX / 16GB / Intel UHD + RTX 4060 Laptop (default adapter) / Windows / Codex Chromium IAB",
+    "crossOriginIsolated": true,
+    "db": "5.7.25-OceanBase seekdb-v1.4.0.0",
+    "model": {
+      "id": "Xenova/bge-small-zh-v1.5",
+      "revision": "75c43b069aac4d136ba6bc1122f995fedcfd2781",
+      "dimension": 512,
+      "queryPrefix": "为这个句子生成表示以用于检索相关文章：",
+      "maxTokens": 256,
+      "files": {
+        "fp32": {
+          "name": "model.onnx",
+          "bytes": 94851877,
+          "sha256": "69a0b846f4f116b5e6aabf9546ea6754d02264f3211a13a1bd69b31b8040749a"
+        },
+        "fp16": {
+          "name": "model_fp16.onnx",
+          "bytes": 47497427,
+          "sha256": "60d0fe5eb8d4e251d4b24dff010a2625c10a013503f0d09f625e8a9b0311315f"
+        },
+        "q8": {
+          "name": "model_quantized.onnx",
+          "bytes": 24010842,
+          "sha256": "15b717c382bcb518ba457b93ea6850ede7f4f1cd8937454aa06972366cd19bcc"
+        }
+      }
+    },
+    "corpus": {
+      "version": "tide-zh-1",
+      "k": 5,
+      "documents": [
+        {
+          "id": "db-hybrid",
+          "title": "混合检索的排序机制",
+          "text": "混合检索同时利用向量语义相似度与全文关键词匹配。seekdb 在数据库内执行两路召回，并通过 RRF 倒数排名融合生成最终排序。向量可以找到词语不同但含义接近的文档，全文索引能够精确匹配产品名和错误代码。"
+        },
+        {
+          "id": "db-refresh",
+          "title": "增量写入与索引刷新",
+          "text": "新文档写入 seekdb 后，需要刷新向量索引以保证搜索可见性。通过 CALL dbms_index_manager.refresh() 建立同步刷新屏障。批量写完后统一刷新通常比每写一条就刷新更快。刷新失败时应保留待刷新状态，允许用户重试。"
+        },
+        {
+          "id": "db-vector",
+          "title": "向量索引 HNSW",
+          "text": "HNSW 是一种基于分层图的近似最近邻检索算法。使用余弦距离比较归一化的文本向量，可快速寻找语义相近的内容。向量维度必须与模型输出一致，BGE-small-zh-v1.5 生成 512 维向量。"
+        },
+        {
+          "id": "gpu-backend",
+          "title": "浏览器中的 WebGPU",
+          "text": "WebGPU 可以利用用户设备的 GPU 加速浏览器本地神经网络推理。Transformers.js 通过 device: webgpu 显式选择后端，FP16 模型需要 shader-f16 特性。适配器不可用或模型运行失败时，应自动降级到 WebAssembly。"
+        },
+        {
+          "id": "wasm-fallback",
+          "title": "WASM 降级路径",
+          "text": "当浏览器不支持 WebGPU 时，ONNX Runtime Web 可以使用 WASM 在 CPU 执行 INT8 模型。开启跨源隔离后可以使用多线程，否则使用单线程。无论采用何种后端，文档向量和查询向量都在用户浏览器本地计算。"
+        },
+        {
+          "id": "quant-int8",
+          "title": "模型 INT8 量化",
+          "text": "INT8 量化把原本 FP32 的部分模型权重压缩成 8 位整数，减少文件体积和内存占用。动态量化在推理时计算激活量化参数，无需额外训练。需要用相同的查询集对比 Recall@K 与 nDCG@K，确认精度损失处于可接受范围。"
+        },
+        {
+          "id": "quant-fp16",
+          "title": "半精度浮点模型",
+          "text": "FP16 把 32 位浮点张量转换为 16 位浮点表示，理论上可将这些张量的存储减半。转换时可保留输入输出为 FP32，并对不支持半精度的算子保留精度。实际压缩比需要统计转换前后的 ONNX 文件字节数。"
+        },
+        {
+          "id": "batch-opt",
+          "title": "向量化的批处理优化",
+          "text": "将多个文本放入同一批次推理可以摊薄调度开销。按文本长度排序并分批，可以减少 padding 的无效计算。模型放在持久化 Web Worker 中复用，避免阻塞页面交互和每次查询重新加载模型。批大小过大也可能导致显存不足。"
+        },
+        {
+          "id": "cache-load",
+          "title": "模型缓存与首次加载",
+          "text": "模型首次使用需要下载并建立推理会话，延迟包含网络传输和运行时初始化。后续可以通过浏览器 Cache Storage 缓存模型文件。冷启动、缓存加载、预热和查询耗时应分开记录，重复实验报告中位数而不是最快一次。"
+        },
+        {
+          "id": "local-privacy",
+          "title": "本地推理与数据路径",
+          "text": "浏览器端侧推理不调用云端推理 API。模型权重可从公开仓库下载，然后由 WebGPU 或 WASM 在用户设备计算。生成的向量、原文和元数据通过本机 API 写入 seekdb。下载模型不意味着将文档送往远端模型服务。"
+        },
+        {
+          "id": "kb-session",
+          "title": "知识库隔离与会话状态",
+          "text": "每个知识库使用独立的 seekdb 集合。前端仅持久化当前集合 ID，服务端使用数据库记录写入版本与已刷新版本。切换集合时清空旧结果，并忽略晚到的旧请求；导入任务固定其目标集合，防止文本误写入其他知识库。"
+        },
+        {
+          "id": "quality-eval",
+          "title": "检索质量评估",
+          "text": "Recall@K 衡量前 K 个结果覆盖了多少相关文档，nDCG@K 同时关注相关性等级与排序位置。必须固定语料和人工标注的查询集，对 FP32、FP16、INT8 使用同一套指标。小型自建集只适合回归测试，不能代表公开排行榜表现。"
+        },
+        {
+          "id": "garden",
+          "title": "阳台薄荷种植",
+          "text": "薄荷喜欢充足的散射光和湿润土壤，夏季需要适当遮阴。盆栽应注意排水，避免积水导致烂根。定期修剪枝条可以促进侧芽生长。"
+        },
+        {
+          "id": "coffee",
+          "title": "手冲咖啡的水温",
+          "text": "手冲咖啡的风味受到水温、研磨度与粉水比影响。浅烘焙豆通常使用较高水温帮助萃取。水流要稳定，避免局部过度萃取造成苦涩。"
+        },
+        {
+          "id": "travel",
+          "title": "城市徒步准备",
+          "text": "徒步出行前需要查看天气，准备饮水与舒适的鞋。较长路线应规划休息点，并保留返程时间。夜间出行应选择照明良好的道路。"
+        },
+        {
+          "id": "cooking",
+          "title": "番茄鸡蛋汤",
+          "text": "先将番茄切块翻炒出汁，加水煮沸后沿锅边倒入打散的蛋液。关火前加入少量盐和葱花，避免长时间加热导致蛋花变老。"
+        }
+      ],
+      "queries": [
+        {
+          "id": "q01",
+          "text": "怎样把关键词与语义搜索的结果融合排序？",
+          "relevant": {
+            "db-hybrid": 3,
+            "db-vector": 1
+          }
+        },
+        {
+          "id": "q02",
+          "text": "新导入的内容搜索不到该怎么办？",
+          "relevant": {
+            "db-refresh": 3,
+            "kb-session": 1
+          }
+        },
+        {
+          "id": "q03",
+          "text": "设备没有 GPU 还能在浏览器里算向量吗？",
+          "relevant": {
+            "wasm-fallback": 3,
+            "gpu-backend": 2
+          }
+        },
+        {
+          "id": "q04",
+          "text": "如何缩小模型文件并检查检索精度是否下降？",
+          "relevant": {
+            "quant-int8": 3,
+            "quant-fp16": 2,
+            "quality-eval": 2
+          }
+        },
+        {
+          "id": "q05",
+          "text": "多个文本一起编码怎样减少补齐的开销？",
+          "relevant": {
+            "batch-opt": 3
+          }
+        },
+        {
+          "id": "q06",
+          "text": "为什么首次使用比后续查询慢？",
+          "relevant": {
+            "cache-load": 3,
+            "batch-opt": 1
+          }
+        },
+        {
+          "id": "q07",
+          "text": "切换知识库如何避免出现上一个集合的结果？",
+          "relevant": {
+            "kb-session": 3
+          }
+        },
+        {
+          "id": "q08",
+          "text": "我的文档会被发送到云端模型计算吗？",
+          "relevant": {
+            "local-privacy": 3,
+            "wasm-fallback": 1
+          }
+        },
+        {
+          "id": "q09",
+          "text": "使用 16 位浮点数能减少多少模型存储？",
+          "relevant": {
+            "quant-fp16": 3
+          }
+        },
+        {
+          "id": "q10",
+          "text": "衡量搜索结果覆盖率和排序好坏用什么指标？",
+          "relevant": {
+            "quality-eval": 3,
+            "quant-int8": 1
+          }
+        },
+        {
+          "id": "q11",
+          "text": "余弦距离和 512 维向量索引有什么关系？",
+          "relevant": {
+            "db-vector": 3
+          }
+        },
+        {
+          "id": "q12",
+          "text": "怎么在阳台上养好薄荷？",
+          "relevant": {
+            "garden": 3
+          }
+        }
+      ]
+    },
+    "selectedProfiles": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "repeats": 3,
+    "cachePolicy": "First repeat per profile clears transformers-cache; later repeats reuse it; HTTP disk cache is not cleared",
+    "timingScope": "performance.now; warm medians exclude first DB query"
+  },
+  "rows": [
+    {
+      "profile": "FP32 · WASM · 基线",
+      "repeat": 1,
+      "engine": {
+        "backend": "wasm",
+        "precision": "fp32",
+        "reason": "手动选择 WASM",
+        "loadMs": 901.464999999851,
+        "warmupMs": 12.714999999850988,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": false
+      },
+      "batchSize": 1,
+      "writeBatch": 1,
+      "refreshStrategy": "each-write",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 1093.2950000003912,
+      "throughput": 14.634659446896103,
+      "writeMs": 322.642300000065,
+      "refreshMs": 10077.972999999998,
+      "firstQuery": {
+        "embeddingMs": 29.619999999646097,
+        "requestMs": 39.325000000186265,
+        "searchMs": 20.004100000020117,
+        "endToEndMs": 69.22999999998137
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 35.09500000020489,
+          "requestMs": 14.779999999795109,
+          "searchMs": 5.526899999997113,
+          "endToEndMs": 50.19499999983236,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 31.145000000018626,
+          "requestMs": 12.895000000018626,
+          "searchMs": 4.6784000000334345,
+          "endToEndMs": 44.31499999994412,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 34.07000000029802,
+          "requestMs": 13.260000000242144,
+          "searchMs": 5.041799999948125,
+          "endToEndMs": 48,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 33.4499999997206,
+          "requestMs": 13.904999999795109,
+          "searchMs": 4.9627000000327826,
+          "endToEndMs": 47.55499999970198,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 27.290000000037253,
+          "requestMs": 13.194999999832362,
+          "searchMs": 5.004099999961909,
+          "endToEndMs": 40.79000000003725,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-fp16",
+            "quant-int8",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 23.300000000279397,
+          "requestMs": 16.634999999776483,
+          "searchMs": 4.122700000007171,
+          "endToEndMs": 40.09499999973923,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "kb-session",
+            "quality-eval",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 23.979999999981374,
+          "requestMs": 15.699999999720603,
+          "searchMs": 4.13890000001993,
+          "endToEndMs": 39.8699999996461,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 24.899999999906868,
+          "requestMs": 12.540000000037253,
+          "searchMs": 4.242100000032224,
+          "endToEndMs": 37.614999999757856,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "quality-eval",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 29.325000000186265,
+          "requestMs": 14.819999999832362,
+          "searchMs": 4.654999999969732,
+          "endToEndMs": 44.375,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 26.050000000279397,
+          "requestMs": 17.209999999962747,
+          "searchMs": 3.923899999994319,
+          "endToEndMs": 43.44500000029802,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "kb-session",
+            "batch-opt"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 42.80999999959022,
+          "requestMs": 15.305000000167638,
+          "searchMs": 4.855500000005122,
+          "endToEndMs": 58.30500000016764,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 23.635000000242144,
+          "requestMs": 11.21500000031665,
+          "searchMs": 3.907100000011269,
+          "endToEndMs": 35.0050000003539,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.8888888888888888,
+      "ndcg": 0.9589284538425078,
+      "modelBytes": 94851877,
+      "totalMs": 13380.115000000224
+    },
+    {
+      "profile": "FP32 · WASM · 基线",
+      "repeat": 2,
+      "engine": {
+        "backend": "wasm",
+        "precision": "fp32",
+        "reason": "手动选择 WASM",
+        "loadMs": 180.09499999973923,
+        "warmupMs": 7.970000000204891,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 1,
+      "writeBatch": 1,
+      "refreshStrategy": "each-write",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 1013.6299999998882,
+      "throughput": 15.784852460958895,
+      "writeMs": 263.88939999998547,
+      "refreshMs": 9547.206299999962,
+      "firstQuery": {
+        "embeddingMs": 34.239999999757856,
+        "requestMs": 25.06499999994412,
+        "searchMs": 11.415900000021793,
+        "endToEndMs": 59.609999999869615
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 32.27999999979511,
+          "requestMs": 13.140000000130385,
+          "searchMs": 5.043799999984913,
+          "endToEndMs": 45.77499999990687,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 27.614999999757856,
+          "requestMs": 18.819999999832362,
+          "searchMs": 4.915500000002794,
+          "endToEndMs": 46.65999999968335,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 24.830000000074506,
+          "requestMs": 21.490000000223517,
+          "searchMs": 4.394299999985378,
+          "endToEndMs": 46.55500000016764,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 26.009999999776483,
+          "requestMs": 12.305000000167638,
+          "searchMs": 4.272500000020955,
+          "endToEndMs": 38.59500000020489,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 24.77500000037253,
+          "requestMs": 13.475000000093132,
+          "searchMs": 4.95230000000447,
+          "endToEndMs": 38.44499999983236,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-fp16",
+            "quant-int8",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 26.78000000026077,
+          "requestMs": 12.540000000037253,
+          "searchMs": 4.45260000001872,
+          "endToEndMs": 39.575000000186265,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "kb-session",
+            "quality-eval",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 28.239999999757856,
+          "requestMs": 11.919999999925494,
+          "searchMs": 4.753999999957159,
+          "endToEndMs": 40.35000000009313,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 28.990000000223517,
+          "requestMs": 12.019999999552965,
+          "searchMs": 4.552999999956228,
+          "endToEndMs": 41.19499999983236,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "quality-eval",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 32.49500000011176,
+          "requestMs": 16.554999999701977,
+          "searchMs": 6.247000000032131,
+          "endToEndMs": 49.33499999996275,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 26.31499999994412,
+          "requestMs": 15.245000000111759,
+          "searchMs": 4.686199999996461,
+          "endToEndMs": 41.705000000074506,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "kb-session",
+            "batch-opt"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 22.989999999757856,
+          "requestMs": 10.975000000093132,
+          "searchMs": 3.73320000001695,
+          "endToEndMs": 34.37999999988824,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 34.46999999973923,
+          "requestMs": 14.040000000037253,
+          "searchMs": 4.9909000000334345,
+          "endToEndMs": 48.68999999994412,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.8888888888888888,
+      "ndcg": 0.9589284538425078,
+      "modelBytes": 94851877,
+      "totalMs": 11869.385000000242
+    },
+    {
+      "profile": "FP32 · WASM · 基线",
+      "repeat": 3,
+      "engine": {
+        "backend": "wasm",
+        "precision": "fp32",
+        "reason": "手动选择 WASM",
+        "loadMs": 156.89500000001863,
+        "warmupMs": 8.015000000130385,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 1,
+      "writeBatch": 1,
+      "refreshStrategy": "each-write",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 936.8449999997392,
+      "throughput": 17.07859891444631,
+      "writeMs": 286.8289000001969,
+      "refreshMs": 9487.979399999953,
+      "firstQuery": {
+        "embeddingMs": 43.06000000005588,
+        "requestMs": 21.93500000005588,
+        "searchMs": 11.037899999995716,
+        "endToEndMs": 65.85999999986961
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 28.15500000026077,
+          "requestMs": 11.830000000074506,
+          "searchMs": 4.623199999972712,
+          "endToEndMs": 40.21999999973923,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 28.575000000186265,
+          "requestMs": 17.43999999994412,
+          "searchMs": 5.88810000004014,
+          "endToEndMs": 46.18000000016764,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 31.84000000031665,
+          "requestMs": 15.865000000223517,
+          "searchMs": 5.817799999960698,
+          "endToEndMs": 48.010000000242144,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 30.24500000011176,
+          "requestMs": 13.145000000018626,
+          "searchMs": 5.334999999962747,
+          "endToEndMs": 43.549999999813735,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 31.12000000011176,
+          "requestMs": 14.464999999850988,
+          "searchMs": 5.962100000004284,
+          "endToEndMs": 45.954999999608845,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-fp16",
+            "quant-int8",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 28.93500000005588,
+          "requestMs": 20.65499999979511,
+          "searchMs": 6.132099999987986,
+          "endToEndMs": 49.890000000130385,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "kb-session",
+            "quality-eval",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 33.55499999970198,
+          "requestMs": 14.68500000005588,
+          "searchMs": 5.28249999997206,
+          "endToEndMs": 48.424999999813735,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 29.415000000037253,
+          "requestMs": 15.470000000204891,
+          "searchMs": 5.652399999962654,
+          "endToEndMs": 45.74000000022352,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "quality-eval",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 29.00499999988824,
+          "requestMs": 11.489999999757856,
+          "searchMs": 4.1859999999869615,
+          "endToEndMs": 40.69499999983236,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 35.890000000130385,
+          "requestMs": 21.169999999925494,
+          "searchMs": 5.303699999989476,
+          "endToEndMs": 57.28000000026077,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "kb-session",
+            "batch-opt"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 27.850000000093132,
+          "requestMs": 15.830000000074506,
+          "searchMs": 5.179500000027474,
+          "endToEndMs": 43.84500000020489,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 23.16000000014901,
+          "requestMs": 12.805000000167638,
+          "searchMs": 4.758999999961816,
+          "endToEndMs": 36.14999999990687,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.8888888888888888,
+      "ndcg": 0.9589284538425078,
+      "modelBytes": 94851877,
+      "totalMs": 11769.939999999944
+    },
+    {
+      "profile": "INT8 · WASM · 优化",
+      "repeat": 1,
+      "engine": {
+        "backend": "wasm",
+        "precision": "q8",
+        "reason": "手动选择 WASM",
+        "loadMs": 298.0800000000745,
+        "warmupMs": 6.919999999925494,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": false
+      },
+      "batchSize": 8,
+      "writeBatch": 32,
+      "refreshStrategy": "after-import",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 861.5950000002049,
+      "throughput": 18.570209901399377,
+      "writeMs": 215.92210000002524,
+      "refreshMs": 517.3329000000376,
+      "firstQuery": {
+        "embeddingMs": 23.81000000005588,
+        "requestMs": 20.290000000037253,
+        "searchMs": 9.831999999994878,
+        "endToEndMs": 44.325000000186265
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 19.41499999957159,
+          "requestMs": 20.354999999981374,
+          "searchMs": 6.031399999978021,
+          "endToEndMs": 40.0749999997206,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 22.265000000130385,
+          "requestMs": 20.12000000011176,
+          "searchMs": 5.048500000033528,
+          "endToEndMs": 42.72500000009313,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 45.68000000016764,
+          "requestMs": 17.75,
+          "searchMs": 6.103600000031292,
+          "endToEndMs": 63.674999999813735,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 25.899999999906868,
+          "requestMs": 16.100000000093132,
+          "searchMs": 5.31349999998929,
+          "endToEndMs": 42.294999999925494,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 23.5,
+          "requestMs": 19.955000000074506,
+          "searchMs": 4.766400000022259,
+          "endToEndMs": 43.66000000014901,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-int8",
+            "quant-fp16",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 20.455000000074506,
+          "requestMs": 19.100000000093132,
+          "searchMs": 7.280100000032689,
+          "endToEndMs": 40.53500000014901,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 24.799999999813735,
+          "requestMs": 14.940000000409782,
+          "searchMs": 5.443900000012945,
+          "endToEndMs": 39.950000000186265,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 24.77999999979511,
+          "requestMs": 16.274999999906868,
+          "searchMs": 5.241700000013225,
+          "endToEndMs": 41.53499999968335,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "db-hybrid",
+            "gpu-backend"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 21.830000000074506,
+          "requestMs": 15.365000000223517,
+          "searchMs": 5.6943999999784864,
+          "endToEndMs": 37.41000000014901,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 20.690000000409782,
+          "requestMs": 16.424999999813735,
+          "searchMs": 4.059500000032131,
+          "endToEndMs": 37.41500000003725,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "batch-opt",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 18.83999999985099,
+          "requestMs": 16.430000000167638,
+          "searchMs": 5.504399999976158,
+          "endToEndMs": 35.44499999983236,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 19.225000000093132,
+          "requestMs": 13.720000000204891,
+          "searchMs": 4.617299999983516,
+          "endToEndMs": 33.25,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 24010842,
+      "totalMs": 2573.8700000001118
+    },
+    {
+      "profile": "INT8 · WASM · 优化",
+      "repeat": 2,
+      "engine": {
+        "backend": "wasm",
+        "precision": "q8",
+        "reason": "手动选择 WASM",
+        "loadMs": 92.55500000016764,
+        "warmupMs": 5.614999999757856,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 8,
+      "writeBatch": 32,
+      "refreshStrategy": "after-import",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 803.9550000000745,
+      "throughput": 19.901611408596896,
+      "writeMs": 185.101399999985,
+      "refreshMs": 420.7876000000397,
+      "firstQuery": {
+        "embeddingMs": 17.515000000130385,
+        "requestMs": 16.31000000005588,
+        "searchMs": 8.26510000001872,
+        "endToEndMs": 34.14500000001863
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 20.09500000020489,
+          "requestMs": 15.554999999701977,
+          "searchMs": 4.454700000002049,
+          "endToEndMs": 35.81499999994412,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 21.700000000186265,
+          "requestMs": 16.865000000223517,
+          "searchMs": 5.410499999998137,
+          "endToEndMs": 38.885000000242144,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 19.990000000223517,
+          "requestMs": 11.71500000031665,
+          "searchMs": 4.263700000010431,
+          "endToEndMs": 31.93999999994412,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 21.229999999981374,
+          "requestMs": 15.955000000074506,
+          "searchMs": 5.03249999997206,
+          "endToEndMs": 37.46500000031665,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 19.300000000279397,
+          "requestMs": 15.614999999757856,
+          "searchMs": 4.739800000039395,
+          "endToEndMs": 35.38499999977648,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-int8",
+            "quant-fp16",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 15.254999999888241,
+          "requestMs": 12.625,
+          "searchMs": 4.00099999998929,
+          "endToEndMs": 28.080000000074506,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 36.22000000020489,
+          "requestMs": 15.004999999888241,
+          "searchMs": 5.2581999999820255,
+          "endToEndMs": 51.42999999970198,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 19.385000000242144,
+          "requestMs": 14.345000000204891,
+          "searchMs": 5.603099999949336,
+          "endToEndMs": 34.515000000130385,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "db-hybrid",
+            "gpu-backend"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 25.43500000005588,
+          "requestMs": 17.950000000186265,
+          "searchMs": 6.642300000006799,
+          "endToEndMs": 43.81000000005588,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 25.27999999979511,
+          "requestMs": 16.37000000011176,
+          "searchMs": 6.0543000000179745,
+          "endToEndMs": 41.91000000014901,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "batch-opt",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 24.545000000391155,
+          "requestMs": 14.43999999994412,
+          "searchMs": 4.956599999975879,
+          "endToEndMs": 39.200000000186265,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 28.34500000020489,
+          "requestMs": 16.134999999776483,
+          "searchMs": 6.182700000004843,
+          "endToEndMs": 44.72999999998137,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 24010842,
+      "totalMs": 2105
+    },
+    {
+      "profile": "INT8 · WASM · 优化",
+      "repeat": 3,
+      "engine": {
+        "backend": "wasm",
+        "precision": "q8",
+        "reason": "手动选择 WASM",
+        "loadMs": 79.33499999996275,
+        "warmupMs": 6.814999999944121,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 8,
+      "writeBatch": 32,
+      "refreshStrategy": "after-import",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 772.8500000000931,
+      "throughput": 20.702594293844953,
+      "writeMs": 267.2465000000084,
+      "refreshMs": 520.3258000000496,
+      "firstQuery": {
+        "embeddingMs": 23.58999999985099,
+        "requestMs": 24.169999999925494,
+        "searchMs": 10.42010000004666,
+        "endToEndMs": 48.06499999994412
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 20.31000000005588,
+          "requestMs": 15.444999999832362,
+          "searchMs": 4.179199999955017,
+          "endToEndMs": 36.00499999988824,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 16.43999999994412,
+          "requestMs": 12.595000000204891,
+          "searchMs": 3.7628000000258908,
+          "endToEndMs": 29.295000000391155,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 22.604999999981374,
+          "requestMs": 16.824999999720603,
+          "searchMs": 6.112599999993108,
+          "endToEndMs": 39.734999999869615,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 23.365000000223517,
+          "requestMs": 12.854999999981374,
+          "searchMs": 4.385500000033062,
+          "endToEndMs": 36.389999999664724,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 17.490000000223517,
+          "requestMs": 13.634999999776483,
+          "searchMs": 5.098799999977928,
+          "endToEndMs": 31.28999999957159,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-int8",
+            "quant-fp16",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 22.00499999988824,
+          "requestMs": 21.03000000026077,
+          "searchMs": 7.004599999985658,
+          "endToEndMs": 43.3000000002794,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 27.104999999981374,
+          "requestMs": 15.010000000242144,
+          "searchMs": 5.417399999976624,
+          "endToEndMs": 42.3000000002794,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 20.709999999962747,
+          "requestMs": 14.334999999962747,
+          "searchMs": 5.04490000003716,
+          "endToEndMs": 35.299999999813735,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "db-hybrid",
+            "gpu-backend"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 22.229999999981374,
+          "requestMs": 14.035000000149012,
+          "searchMs": 5.584899999957997,
+          "endToEndMs": 36.5,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 21.520000000018626,
+          "requestMs": 13.600000000093132,
+          "searchMs": 4.9967999999644235,
+          "endToEndMs": 35.39500000001863,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "batch-opt",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 21.635000000242144,
+          "requestMs": 13.154999999795109,
+          "searchMs": 5.00289999996312,
+          "endToEndMs": 35.02499999990687,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 21.12999999988824,
+          "requestMs": 14.485000000335276,
+          "searchMs": 5.143600000010338,
+          "endToEndMs": 36.02000000001863,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 24010842,
+      "totalMs": 2202.435000000056
+    },
+    {
+      "profile": "FP32 · WebGPU · 基线",
+      "repeat": 1,
+      "engine": {
+        "backend": "webgpu",
+        "precision": "fp32",
+        "reason": "WebGPU 适配器可用",
+        "loadMs": 766.535000000149,
+        "warmupMs": 292.2799999997951,
+        "threads": 0,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": false
+      },
+      "batchSize": 1,
+      "writeBatch": 1,
+      "refreshStrategy": "each-write",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 240.3249999997206,
+      "throughput": 66.57651097479913,
+      "writeMs": 297.0610000001034,
+      "refreshMs": 9346.571499999904,
+      "firstQuery": {
+        "embeddingMs": 9.135000000242144,
+        "requestMs": 15.760000000242144,
+        "searchMs": 8.434799999988172,
+        "endToEndMs": 25.18999999994412
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 6.4799999999813735,
+          "requestMs": 13.279999999795109,
+          "searchMs": 4.724900000030175,
+          "endToEndMs": 19.90499999979511,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 7.349999999627471,
+          "requestMs": 12.580000000074506,
+          "searchMs": 4.9465999999665655,
+          "endToEndMs": 20.149999999906868,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 11.5,
+          "requestMs": 13.820000000298023,
+          "searchMs": 5.264299999980722,
+          "endToEndMs": 25.540000000037253,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 6.944999999832362,
+          "requestMs": 15.455000000074506,
+          "searchMs": 5.320599999977276,
+          "endToEndMs": 22.734999999869615,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 8.884999999776483,
+          "requestMs": 13.43500000005588,
+          "searchMs": 5.129399999976158,
+          "endToEndMs": 22.604999999981374,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-fp16",
+            "quant-int8",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 9.81499999994412,
+          "requestMs": 19.304999999701977,
+          "searchMs": 6.383700000005774,
+          "endToEndMs": 29.415000000037253,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "kb-session",
+            "quality-eval",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 11.944999999832362,
+          "requestMs": 16.165000000037253,
+          "searchMs": 6.059899999992922,
+          "endToEndMs": 28.350000000093132,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 11.345000000204891,
+          "requestMs": 14.194999999832362,
+          "searchMs": 4.992499999993015,
+          "endToEndMs": 26.354999999981374,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "quality-eval",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 9.56000000005588,
+          "requestMs": 14.049999999813735,
+          "searchMs": 5.263099999981932,
+          "endToEndMs": 23.875,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 9.625,
+          "requestMs": 14.419999999925494,
+          "searchMs": 5.217199999955483,
+          "endToEndMs": 24.28999999957159,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "kb-session",
+            "batch-opt"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 8.819999999832362,
+          "requestMs": 16.325000000186265,
+          "searchMs": 6.4355999999679625,
+          "endToEndMs": 25.484999999869615,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 10.43999999994412,
+          "requestMs": 16.444999999832362,
+          "searchMs": 5.524399999994785,
+          "endToEndMs": 27.139999999664724,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.8888888888888888,
+      "ndcg": 0.9589284538425078,
+      "modelBytes": 94851877,
+      "totalMs": 11584.76500000013
+    },
+    {
+      "profile": "FP32 · WebGPU · 基线",
+      "repeat": 2,
+      "engine": {
+        "backend": "webgpu",
+        "precision": "fp32",
+        "reason": "WebGPU 适配器可用",
+        "loadMs": 303.0200000000186,
+        "warmupMs": 101.15499999979511,
+        "threads": 0,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 1,
+      "writeBatch": 1,
+      "refreshStrategy": "each-write",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 176.95999999996275,
+      "throughput": 90.41591320074237,
+      "writeMs": 256.47440000018105,
+      "refreshMs": 9765.308499999985,
+      "firstQuery": {
+        "embeddingMs": 7.620000000111759,
+        "requestMs": 17.770000000018626,
+        "searchMs": 8.378599999996368,
+        "endToEndMs": 25.709999999962747
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 6.899999999906868,
+          "requestMs": 16.975000000093132,
+          "searchMs": 5.190899999986868,
+          "endToEndMs": 24.09500000020489,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 6.959999999962747,
+          "requestMs": 12.070000000298023,
+          "searchMs": 4.190000000002328,
+          "endToEndMs": 19.25,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 6.734999999869615,
+          "requestMs": 10.604999999981374,
+          "searchMs": 3.744399999966845,
+          "endToEndMs": 17.71000000042841,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 6.004999999888241,
+          "requestMs": 12.049999999813735,
+          "searchMs": 3.7903999999980442,
+          "endToEndMs": 18.18500000005588,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 7.024999999906868,
+          "requestMs": 10.254999999888241,
+          "searchMs": 3.6860999999917112,
+          "endToEndMs": 17.43999999994412,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-fp16",
+            "quant-int8",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 6.964999999850988,
+          "requestMs": 13.419999999925494,
+          "searchMs": 4.539099999994505,
+          "endToEndMs": 20.729999999981374,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "kb-session",
+            "quality-eval",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 8.959999999962747,
+          "requestMs": 12.919999999925494,
+          "searchMs": 4.328799999959301,
+          "endToEndMs": 22.28000000026077,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 6.03000000026077,
+          "requestMs": 14.514999999664724,
+          "searchMs": 4.069400000036694,
+          "endToEndMs": 20.764999999664724,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "quality-eval",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 7.439999999944121,
+          "requestMs": 12.28000000026077,
+          "searchMs": 4.638899999961723,
+          "endToEndMs": 19.90500000026077,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 7.689999999944121,
+          "requestMs": 11.81499999994412,
+          "searchMs": 4.239999999990687,
+          "endToEndMs": 19.74500000011176,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "kb-session",
+            "batch-opt"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 6.259999999776483,
+          "requestMs": 14.274999999906868,
+          "searchMs": 4.006099999998696,
+          "endToEndMs": 20.75499999988824,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 8.115000000223517,
+          "requestMs": 19.990000000223517,
+          "searchMs": 8.745899999979883,
+          "endToEndMs": 28.56499999994412,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.8888888888888888,
+      "ndcg": 0.9589284538425078,
+      "modelBytes": 94851877,
+      "totalMs": 11209.514999999665
+    },
+    {
+      "profile": "FP32 · WebGPU · 基线",
+      "repeat": 3,
+      "engine": {
+        "backend": "webgpu",
+        "precision": "fp32",
+        "reason": "WebGPU 适配器可用",
+        "loadMs": 199.85999999986961,
+        "warmupMs": 55.94000000040978,
+        "threads": 0,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 1,
+      "writeBatch": 1,
+      "refreshStrategy": "each-write",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 139.33499999996275,
+      "throughput": 114.83116230670169,
+      "writeMs": 298.08840000012424,
+      "refreshMs": 9381.508799999952,
+      "firstQuery": {
+        "embeddingMs": 8.734999999869615,
+        "requestMs": 16.18500000005588,
+        "searchMs": 8.6085000000312,
+        "endToEndMs": 25.25499999988824
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 6.2700000000186265,
+          "requestMs": 12.794999999925494,
+          "searchMs": 4.573800000012852,
+          "endToEndMs": 19.304999999701977,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 8.895000000018626,
+          "requestMs": 17.125,
+          "searchMs": 4.3267000000341795,
+          "endToEndMs": 26.455000000074506,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 6.900000000372529,
+          "requestMs": 12.509999999776483,
+          "searchMs": 4.248600000049919,
+          "endToEndMs": 19.725000000093132,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 6.4500000001862645,
+          "requestMs": 12.209999999962747,
+          "searchMs": 4.035499999998137,
+          "endToEndMs": 18.929999999701977,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 6.064999999944121,
+          "requestMs": 17.329999999608845,
+          "searchMs": 4.613300000026356,
+          "endToEndMs": 23.66000000014901,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-fp16",
+            "quant-int8",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 9.259999999776483,
+          "requestMs": 13.054999999701977,
+          "searchMs": 4.975299999990966,
+          "endToEndMs": 22.56499999994412,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "kb-session",
+            "quality-eval",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 11.739999999757856,
+          "requestMs": 13.18999999994412,
+          "searchMs": 4.531199999968521,
+          "endToEndMs": 25.430000000167638,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 8.90999999968335,
+          "requestMs": 14.699999999720603,
+          "searchMs": 4.729400000011083,
+          "endToEndMs": 23.955000000074506,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "quality-eval",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 10.080000000074506,
+          "requestMs": 13.875,
+          "searchMs": 4.731099999975413,
+          "endToEndMs": 24.31499999994412,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 7.505000000353903,
+          "requestMs": 14.484999999869615,
+          "searchMs": 5.345400000049267,
+          "endToEndMs": 22.194999999832362,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "kb-session",
+            "batch-opt"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 9.649999999906868,
+          "requestMs": 15.299999999813735,
+          "searchMs": 4.367499999993015,
+          "endToEndMs": 25.265000000130385,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 8.09499999973923,
+          "requestMs": 12.370000000111759,
+          "searchMs": 4.338300000003073,
+          "endToEndMs": 20.875,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.8888888888888888,
+      "ndcg": 0.9589284538425078,
+      "modelBytes": 94851877,
+      "totalMs": 10692.049999999814
+    },
+    {
+      "profile": "FP16 · WebGPU · 优化",
+      "repeat": 1,
+      "engine": {
+        "backend": "webgpu",
+        "precision": "fp16",
+        "reason": "WebGPU 适配器可用",
+        "loadMs": 436.9850000003353,
+        "warmupMs": 18.179999999701977,
+        "threads": 0,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": false
+      },
+      "batchSize": 8,
+      "writeBatch": 32,
+      "refreshStrategy": "after-import",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 88.56999999983236,
+      "throughput": 180.64807496929302,
+      "writeMs": 160.6364000000176,
+      "refreshMs": 420.44490000000224,
+      "firstQuery": {
+        "embeddingMs": 26.234999999869615,
+        "requestMs": 20,
+        "searchMs": 9.072899999970105,
+        "endToEndMs": 46.765000000130385
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 6.515000000130385,
+          "requestMs": 12.600000000093132,
+          "searchMs": 4.425300000002608,
+          "endToEndMs": 19.625,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 5.764999999664724,
+          "requestMs": 12.31000000005588,
+          "searchMs": 4.450100000016391,
+          "endToEndMs": 18.324999999720603,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 17.045000000391155,
+          "requestMs": 14.180000000167638,
+          "searchMs": 5.411599999992177,
+          "endToEndMs": 31.66000000014901,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 8.194999999832362,
+          "requestMs": 14.305000000167638,
+          "searchMs": 5.446499999961816,
+          "endToEndMs": 22.705000000074506,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 11.59000000031665,
+          "requestMs": 12.910000000149012,
+          "searchMs": 4.628599999996368,
+          "endToEndMs": 24.675000000279397,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-fp16",
+            "quant-int8",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 9.070000000298023,
+          "requestMs": 12.474999999627471,
+          "searchMs": 4.7532000000355765,
+          "endToEndMs": 21.929999999701977,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 7.305000000167638,
+          "requestMs": 14.625,
+          "searchMs": 5.064699999988079,
+          "endToEndMs": 22.270000000018626,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 8.225000000093132,
+          "requestMs": 15.489999999757856,
+          "searchMs": 6.211799999990035,
+          "endToEndMs": 24.059999999590218,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "quality-eval",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 12.069999999832362,
+          "requestMs": 12.794999999925494,
+          "searchMs": 5.190600000030827,
+          "endToEndMs": 25.104999999981374,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 9.175000000279397,
+          "requestMs": 13.989999999757856,
+          "searchMs": 5.253400000045076,
+          "endToEndMs": 23.515000000130385,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "kb-session",
+            "batch-opt"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 8.755000000353903,
+          "requestMs": 12.854999999981374,
+          "searchMs": 4.962200000009034,
+          "endToEndMs": 21.884999999776483,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 11.81499999994412,
+          "requestMs": 18.989999999757856,
+          "searchMs": 5.912899999995716,
+          "endToEndMs": 31.234999999869615,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 47497427,
+      "totalMs": 1567.7099999999627
+    },
+    {
+      "profile": "FP16 · WebGPU · 优化",
+      "repeat": 2,
+      "engine": {
+        "backend": "webgpu",
+        "precision": "fp16",
+        "reason": "WebGPU 适配器可用",
+        "loadMs": 179.92999999970198,
+        "warmupMs": 14.829999999608845,
+        "threads": 0,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 8,
+      "writeBatch": 32,
+      "refreshStrategy": "after-import",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 42.75999999977648,
+      "throughput": 374.1814780187941,
+      "writeMs": 194.4430000000284,
+      "refreshMs": 732.7685000000056,
+      "firstQuery": {
+        "embeddingMs": 17.99500000011176,
+        "requestMs": 22.979999999981374,
+        "searchMs": 11.283100000000559,
+        "endToEndMs": 41.234999999869615
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 10.444999999832362,
+          "requestMs": 18.37999999988824,
+          "searchMs": 6.352299999969546,
+          "endToEndMs": 29.125,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 8.43500000005588,
+          "requestMs": 22.375,
+          "searchMs": 5.787500000034925,
+          "endToEndMs": 31.055000000167638,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 11.225000000093132,
+          "requestMs": 14.40500000026077,
+          "searchMs": 5.29859999998007,
+          "endToEndMs": 25.93999999994412,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 9.045000000391155,
+          "requestMs": 19.100000000093132,
+          "searchMs": 6.193300000042655,
+          "endToEndMs": 28.485000000335276,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 11.529999999795109,
+          "requestMs": 16.989999999757856,
+          "searchMs": 6.486800000013318,
+          "endToEndMs": 28.859999999869615,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-fp16",
+            "quant-int8",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 12.229999999981374,
+          "requestMs": 14.984999999869615,
+          "searchMs": 5.95429999998305,
+          "endToEndMs": 27.515000000130385,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 9.279999999795109,
+          "requestMs": 19.40499999979511,
+          "searchMs": 5.990400000009686,
+          "endToEndMs": 30.165000000037253,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 8.93999999994412,
+          "requestMs": 20.290000000037253,
+          "searchMs": 6.923700000043027,
+          "endToEndMs": 30.149999999906868,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "quality-eval",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 9.31000000005588,
+          "requestMs": 18.584999999962747,
+          "searchMs": 6.320500000030734,
+          "endToEndMs": 28.260000000242144,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 11.724999999627471,
+          "requestMs": 21.609999999869615,
+          "searchMs": 9.168200000014622,
+          "endToEndMs": 34.31499999994412,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "kb-session",
+            "batch-opt"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 13.424999999813735,
+          "requestMs": 20.56499999994412,
+          "searchMs": 8.971700000052806,
+          "endToEndMs": 34.39500000001863,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 8.744999999646097,
+          "requestMs": 21.104999999981374,
+          "searchMs": 7.350199999986216,
+          "endToEndMs": 30.119999999646097,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 47497427,
+      "totalMs": 1649.714999999851
+    },
+    {
+      "profile": "FP16 · WebGPU · 优化",
+      "repeat": 3,
+      "engine": {
+        "backend": "webgpu",
+        "precision": "fp16",
+        "reason": "WebGPU 适配器可用",
+        "loadMs": 231.85000000009313,
+        "warmupMs": 37.36500000022352,
+        "threads": 0,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 8,
+      "writeBatch": 32,
+      "refreshStrategy": "after-import",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 43.61500000022352,
+      "throughput": 366.84626848373273,
+      "writeMs": 241.21199999999953,
+      "refreshMs": 522.0811000000103,
+      "firstQuery": {
+        "embeddingMs": 8.28499999968335,
+        "requestMs": 21.12999999988824,
+        "searchMs": 10.12530000001425,
+        "endToEndMs": 29.87000000011176
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 8.879999999888241,
+          "requestMs": 21.770000000018626,
+          "searchMs": 6.362299999978859,
+          "endToEndMs": 31.010000000242144,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 10.200000000186265,
+          "requestMs": 16.574999999720603,
+          "searchMs": 5.396000000007916,
+          "endToEndMs": 27.104999999981374,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 8.860000000335276,
+          "requestMs": 15.925000000279397,
+          "searchMs": 4.499699999985751,
+          "endToEndMs": 25.03500000014901,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 9.31499999994412,
+          "requestMs": 14.104999999981374,
+          "searchMs": 4.602000000013504,
+          "endToEndMs": 23.93500000005588,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 10.554999999701977,
+          "requestMs": 18.33999999985099,
+          "searchMs": 4.787199999962468,
+          "endToEndMs": 29.270000000018626,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-fp16",
+            "quant-int8",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 9.035000000149012,
+          "requestMs": 14.459999999962747,
+          "searchMs": 6.001199999998789,
+          "endToEndMs": 23.755000000353903,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 8.125,
+          "requestMs": 14.149999999906868,
+          "searchMs": 5.667699999990873,
+          "endToEndMs": 22.494999999646097,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 9.949999999720603,
+          "requestMs": 14.285000000149012,
+          "searchMs": 4.431900000025053,
+          "endToEndMs": 24.575000000186265,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "quality-eval",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 11.049999999813735,
+          "requestMs": 15.479999999981374,
+          "searchMs": 4.945200000016484,
+          "endToEndMs": 26.865000000223517,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 10.93500000005588,
+          "requestMs": 17.290000000037253,
+          "searchMs": 5.269800000009127,
+          "endToEndMs": 28.71499999985099,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "kb-session",
+            "batch-opt"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 11.680000000167638,
+          "requestMs": 20.140000000130385,
+          "searchMs": 6.35730000003241,
+          "endToEndMs": 32.110000000335276,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 11.504999999888241,
+          "requestMs": 18.31000000005588,
+          "searchMs": 6.327700000023469,
+          "endToEndMs": 30.03000000026077,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 47497427,
+      "totalMs": 1510.9699999997392
+    },
+    {
+      "profile": "INT8 · WASM · 批处理消融",
+      "repeat": 1,
+      "engine": {
+        "backend": "wasm",
+        "precision": "q8",
+        "reason": "手动选择 WASM",
+        "loadMs": 352.27499999990687,
+        "warmupMs": 11.34499999973923,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": false
+      },
+      "batchSize": 1,
+      "writeBatch": 32,
+      "refreshStrategy": "after-import",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 1006.5550000001676,
+      "throughput": 15.895803011258536,
+      "writeMs": 267.7114999999758,
+      "refreshMs": 522.6879999999655,
+      "firstQuery": {
+        "embeddingMs": 30.475000000093132,
+        "requestMs": 17.770000000018626,
+        "searchMs": 8.998299999977462,
+        "endToEndMs": 48.93999999994412
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 40.294999999925494,
+          "requestMs": 15.854999999981374,
+          "searchMs": 5.553399999975227,
+          "endToEndMs": 56.455000000074506,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 22.625,
+          "requestMs": 22.175000000279397,
+          "searchMs": 7.5807999999960884,
+          "endToEndMs": 45.03000000026077,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 41.39999999990687,
+          "requestMs": 18.390000000130385,
+          "searchMs": 5.023300000000745,
+          "endToEndMs": 60.375,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-vector",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 25.03500000014901,
+          "requestMs": 13.119999999646097,
+          "searchMs": 4.252399999997579,
+          "endToEndMs": 38.4949999996461,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 28.709999999962747,
+          "requestMs": 12.330000000074506,
+          "searchMs": 4.5292999999946915,
+          "endToEndMs": 41.31000000005588,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-int8",
+            "quant-fp16",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 28.234999999869615,
+          "requestMs": 19.384999999776483,
+          "searchMs": 8.174100000003818,
+          "endToEndMs": 47.85499999998137,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 41.75999999977648,
+          "requestMs": 19.49500000011176,
+          "searchMs": 6.321799999976065,
+          "endToEndMs": 61.56999999983236,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 35.954999999608845,
+          "requestMs": 14.884999999776483,
+          "searchMs": 5.098200000007637,
+          "endToEndMs": 51.169999999925494,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "db-hybrid",
+            "gpu-backend"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 36.510000000242144,
+          "requestMs": 22.815000000409782,
+          "searchMs": 6.629399999976158,
+          "endToEndMs": 60.09000000031665,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 23.24500000011176,
+          "requestMs": 13.979999999981374,
+          "searchMs": 4.138999999966472,
+          "endToEndMs": 37.47500000009313,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "batch-opt",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 30.734999999869615,
+          "requestMs": 13.919999999925494,
+          "searchMs": 4.742599999997765,
+          "endToEndMs": 44.924999999813735,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 18.729999999981374,
+          "requestMs": 11.714999999850988,
+          "searchMs": 3.93470000004163,
+          "endToEndMs": 30.759999999776483,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 24010842,
+      "totalMs": 2935.244999999646
+    },
+    {
+      "profile": "INT8 · WASM · 批处理消融",
+      "repeat": 2,
+      "engine": {
+        "backend": "wasm",
+        "precision": "q8",
+        "reason": "手动选择 WASM",
+        "loadMs": 138.0449999999255,
+        "warmupMs": 8.665000000037253,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 1,
+      "writeBatch": 32,
+      "refreshStrategy": "after-import",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 981.9399999999441,
+      "throughput": 16.294274599263613,
+      "writeMs": 174.1314999999595,
+      "refreshMs": 833.2761999999639,
+      "firstQuery": {
+        "embeddingMs": 25.78000000026077,
+        "requestMs": 22.47000000020489,
+        "searchMs": 12.529500000004191,
+        "endToEndMs": 48.450000000186265
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 23.419999999925494,
+          "requestMs": 19.084999999962747,
+          "searchMs": 5.374500000034459,
+          "endToEndMs": 42.84499999973923,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 26.81499999994412,
+          "requestMs": 15.680000000167638,
+          "searchMs": 5.700799999991432,
+          "endToEndMs": 42.94499999983236,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 30.359999999869615,
+          "requestMs": 18.830000000074506,
+          "searchMs": 5.095900000014808,
+          "endToEndMs": 49.55500000016764,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-vector",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 27.455000000074506,
+          "requestMs": 19.850000000093132,
+          "searchMs": 5.013399999996182,
+          "endToEndMs": 47.91500000003725,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 21.72000000020489,
+          "requestMs": 15.84000000031665,
+          "searchMs": 4.758800000010524,
+          "endToEndMs": 38,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-int8",
+            "quant-fp16",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 19.854999999981374,
+          "requestMs": 18.37999999988824,
+          "searchMs": 4.8616999999503605,
+          "endToEndMs": 38.85499999998137,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 19.140000000130385,
+          "requestMs": 15.395000000018626,
+          "searchMs": 3.7317000000039116,
+          "endToEndMs": 34.8000000002794,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 21.34500000020489,
+          "requestMs": 15.125,
+          "searchMs": 4.7577999999630265,
+          "endToEndMs": 36.72000000020489,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "db-hybrid",
+            "gpu-backend"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 23.46999999973923,
+          "requestMs": 15.375,
+          "searchMs": 5.214200000045821,
+          "endToEndMs": 39.11500000022352,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 31.18500000005588,
+          "requestMs": 15.319999999832362,
+          "searchMs": 4.293500000028871,
+          "endToEndMs": 46.78999999957159,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "batch-opt",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 22.180000000167638,
+          "requestMs": 22.149999999906868,
+          "searchMs": 4.806500000006054,
+          "endToEndMs": 44.66000000014901,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 16.66000000014901,
+          "requestMs": 13.865000000223517,
+          "searchMs": 4.403200000000652,
+          "endToEndMs": 30.87000000011176,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 24010842,
+      "totalMs": 2762.2549999998882
+    },
+    {
+      "profile": "INT8 · WASM · 批处理消融",
+      "repeat": 3,
+      "engine": {
+        "backend": "wasm",
+        "precision": "q8",
+        "reason": "手动选择 WASM",
+        "loadMs": 100.52999999979511,
+        "warmupMs": 9.600000000093132,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 1,
+      "writeBatch": 32,
+      "refreshStrategy": "after-import",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 842.8100000000559,
+      "throughput": 18.984112670707443,
+      "writeMs": 198.71730000001844,
+      "refreshMs": 626.8353999999817,
+      "firstQuery": {
+        "embeddingMs": 43.454999999608845,
+        "requestMs": 24.81000000005588,
+        "searchMs": 9.940000000002328,
+        "endToEndMs": 68.62999999988824
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 33.02499999990687,
+          "requestMs": 17.259999999776483,
+          "searchMs": 5.514499999990221,
+          "endToEndMs": 50.6999999997206,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 26.239999999757856,
+          "requestMs": 18.16000000014901,
+          "searchMs": 6.9883999999728985,
+          "endToEndMs": 45.70999999996275,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 33.77500000037253,
+          "requestMs": 17.705000000074506,
+          "searchMs": 6.586499999975786,
+          "endToEndMs": 51.81499999994412,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-vector",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 41.984999999869615,
+          "requestMs": 15.75,
+          "searchMs": 5.204200000036508,
+          "endToEndMs": 58.140000000130385,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 35.66000000014901,
+          "requestMs": 19.385000000242144,
+          "searchMs": 5.8985000000102445,
+          "endToEndMs": 55.260000000242144,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-int8",
+            "quant-fp16",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 24.28499999968335,
+          "requestMs": 12.770000000018626,
+          "searchMs": 4.53449999995064,
+          "endToEndMs": 37.45999999996275,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 24.71999999973923,
+          "requestMs": 17.509999999776483,
+          "searchMs": 4.7467999999644235,
+          "endToEndMs": 42.52499999990687,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "quant-fp16"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 33.39500000001863,
+          "requestMs": 13.364999999757856,
+          "searchMs": 4.572199999995064,
+          "endToEndMs": 47.18500000005588,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "db-hybrid",
+            "gpu-backend"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 27.205000000074506,
+          "requestMs": 17.429999999701977,
+          "searchMs": 6.975700000009965,
+          "endToEndMs": 45.03500000014901,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 29.309999999590218,
+          "requestMs": 10.760000000242144,
+          "searchMs": 3.7458999999798834,
+          "endToEndMs": 40.260000000242144,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "batch-opt",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 31.31000000005588,
+          "requestMs": 14.919999999925494,
+          "searchMs": 4.928799999994226,
+          "endToEndMs": 46.609999999869615,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 25.93999999994412,
+          "requestMs": 2666.1099999998696,
+          "searchMs": 7.185099999944214,
+          "endToEndMs": 2692.524999999907,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 24010842,
+      "totalMs": 5156.745000000112
+    },
+    {
+      "profile": "INT8 · WASM · 刷新消融",
+      "repeat": 1,
+      "engine": {
+        "backend": "wasm",
+        "precision": "q8",
+        "reason": "手动选择 WASM",
+        "loadMs": 247.51500000013039,
+        "warmupMs": 11.25,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": false
+      },
+      "batchSize": 8,
+      "writeBatch": 1,
+      "refreshStrategy": "each-write",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 1123.5200000000186,
+      "throughput": 14.240956992309647,
+      "writeMs": 266.60150000010617,
+      "refreshMs": 9787.937599999947,
+      "firstQuery": {
+        "embeddingMs": 19.5,
+        "requestMs": 21.899999999906868,
+        "searchMs": 8.252600000007078,
+        "endToEndMs": 41.69500000029802
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 25.274999999906868,
+          "requestMs": 14.56499999994412,
+          "searchMs": 4.462100000004284,
+          "endToEndMs": 40.17999999970198,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 27.399999999906868,
+          "requestMs": 11.365000000223517,
+          "searchMs": 3.8216999999713153,
+          "endToEndMs": 39.0050000003539,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 30.87999999988824,
+          "requestMs": 16.330000000074506,
+          "searchMs": 4.7700999999651685,
+          "endToEndMs": 47.43000000016764,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 25.320000000298023,
+          "requestMs": 16.925000000279397,
+          "searchMs": 5.246199999994133,
+          "endToEndMs": 42.485000000335276,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 20.325000000186265,
+          "requestMs": 12.910000000149012,
+          "searchMs": 4.595000000030268,
+          "endToEndMs": 33.50499999988824,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-int8",
+            "quant-fp16",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 20.47000000020489,
+          "requestMs": 12.995000000111759,
+          "searchMs": 4.492599999997765,
+          "endToEndMs": 33.64500000001863,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 21.084999999962747,
+          "requestMs": 12.174999999813735,
+          "searchMs": 4.702799999970011,
+          "endToEndMs": 33.515000000130385,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 25.930000000167638,
+          "requestMs": 15.115000000223517,
+          "searchMs": 4.78459999995539,
+          "endToEndMs": 41.31499999994412,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "db-hybrid",
+            "gpu-backend"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 19.00499999988824,
+          "requestMs": 14.024999999906868,
+          "searchMs": 4.810200000007171,
+          "endToEndMs": 33.3699999996461,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 25.774999999906868,
+          "requestMs": 18.169999999925494,
+          "searchMs": 5.194599999987986,
+          "endToEndMs": 44.22500000009313,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "batch-opt",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 20.734999999869615,
+          "requestMs": 14.130000000353903,
+          "searchMs": 4.706499999971129,
+          "endToEndMs": 35.22000000020489,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 24.200000000186265,
+          "requestMs": 21.020000000018626,
+          "searchMs": 4.916800000006333,
+          "endToEndMs": 45.47000000020489,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 24010842,
+      "totalMs": 12287.475000000093
+    },
+    {
+      "profile": "INT8 · WASM · 刷新消融",
+      "repeat": 2,
+      "engine": {
+        "backend": "wasm",
+        "precision": "q8",
+        "reason": "手动选择 WASM",
+        "loadMs": 113.28500000014901,
+        "warmupMs": 13.639999999664724,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 8,
+      "writeBatch": 1,
+      "refreshStrategy": "each-write",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 1041.2450000001118,
+      "throughput": 15.366220245953913,
+      "writeMs": 244.9303999998956,
+      "refreshMs": 9708.390600000042,
+      "firstQuery": {
+        "embeddingMs": 23.43500000005588,
+        "requestMs": 21.725000000093132,
+        "searchMs": 9.06080000003567,
+        "endToEndMs": 45.544999999925494
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 24.21499999985099,
+          "requestMs": 13,
+          "searchMs": 4.201899999985471,
+          "endToEndMs": 37.43999999994412,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 20.009999999776483,
+          "requestMs": 13.964999999850988,
+          "searchMs": 4.992900000012014,
+          "endToEndMs": 34.25499999988824,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 27.799999999813735,
+          "requestMs": 15.934999999590218,
+          "searchMs": 6.645699999993667,
+          "endToEndMs": 44.0050000003539,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 29.415000000037253,
+          "requestMs": 15.484999999869615,
+          "searchMs": 4.088500000012573,
+          "endToEndMs": 45.21999999973923,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 23.15999999968335,
+          "requestMs": 13.634999999776483,
+          "searchMs": 5.236000000033528,
+          "endToEndMs": 37.14999999990687,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-int8",
+            "quant-fp16",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 20.390000000130385,
+          "requestMs": 14.415000000037253,
+          "searchMs": 4.467899999988731,
+          "endToEndMs": 35.0050000003539,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 25.545000000391155,
+          "requestMs": 12.449999999720603,
+          "searchMs": 4.170500000007451,
+          "endToEndMs": 38.294999999925494,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 17.264999999664724,
+          "requestMs": 13.540000000037253,
+          "searchMs": 4.13890000001993,
+          "endToEndMs": 31.09500000020489,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "db-hybrid",
+            "gpu-backend"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 19.625,
+          "requestMs": 14.120000000111759,
+          "searchMs": 4.772999999986496,
+          "endToEndMs": 33.99000000022352,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 25.640000000130385,
+          "requestMs": 17.565000000409782,
+          "searchMs": 4.694000000017695,
+          "endToEndMs": 43.705000000074506,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "batch-opt",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 24.299999999813735,
+          "requestMs": 18.290000000037253,
+          "searchMs": 4.869300000020303,
+          "endToEndMs": 43.359999999869615,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 20.015000000130385,
+          "requestMs": 13.790000000037253,
+          "searchMs": 4.757000000041444,
+          "endToEndMs": 34.080000000074506,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 24010842,
+      "totalMs": 11937.254999999888
+    },
+    {
+      "profile": "INT8 · WASM · 刷新消融",
+      "repeat": 3,
+      "engine": {
+        "backend": "wasm",
+        "precision": "q8",
+        "reason": "手动选择 WASM",
+        "loadMs": 96.80500000016764,
+        "warmupMs": 11.895000000018626,
+        "threads": 1,
+        "webgpuAvailable": true,
+        "shaderF16": true,
+        "cached": true
+      },
+      "batchSize": 8,
+      "writeBatch": 1,
+      "refreshStrategy": "each-write",
+      "chunkCount": 16,
+      "queryCount": 12,
+      "embeddingMs": 1013.5299999997951,
+      "throughput": 15.786409874402569,
+      "writeMs": 274.08580000005895,
+      "refreshMs": 9722.09269999998,
+      "firstQuery": {
+        "embeddingMs": 21.649999999906868,
+        "requestMs": 26.919999999925494,
+        "searchMs": 18.206899999990128,
+        "endToEndMs": 48.955000000074506
+      },
+      "queries": [
+        {
+          "id": "q01",
+          "embeddingMs": 20.424999999813735,
+          "requestMs": 13.415000000037253,
+          "searchMs": 4.519100000034086,
+          "endToEndMs": 34.04000000003725,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "db-hybrid",
+            "quality-eval",
+            "db-vector",
+            "db-refresh",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q02",
+          "embeddingMs": 19.014999999664724,
+          "requestMs": 14.825000000186265,
+          "searchMs": 4.983399999968242,
+          "endToEndMs": 34.075000000186265,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-refresh",
+            "kb-session",
+            "db-vector",
+            "db-hybrid",
+            "quant-int8"
+          ]
+        },
+        {
+          "id": "q03",
+          "embeddingMs": 23.52999999979511,
+          "requestMs": 14.879999999888241,
+          "searchMs": 4.070000000006985,
+          "endToEndMs": 38.78499999968335,
+          "recall": 1,
+          "ndcg": 0.8339912323981488,
+          "hits": [
+            "gpu-backend",
+            "wasm-fallback",
+            "local-privacy",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q04",
+          "embeddingMs": 22.760000000242144,
+          "requestMs": 11.915000000037253,
+          "searchMs": 4.255000000004657,
+          "endToEndMs": 34.93999999994412,
+          "recall": 0.6666666666666666,
+          "ndcg": 0.8556691603792903,
+          "hits": [
+            "quant-int8",
+            "quant-fp16",
+            "cache-load",
+            "batch-opt",
+            "db-hybrid"
+          ]
+        },
+        {
+          "id": "q05",
+          "embeddingMs": 20.52500000037253,
+          "requestMs": 11.274999999906868,
+          "searchMs": 4.633700000005774,
+          "endToEndMs": 31.96499999985099,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "batch-opt",
+            "kb-session",
+            "quant-int8",
+            "quant-fp16",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q06",
+          "embeddingMs": 21.050000000279397,
+          "requestMs": 11.870000000111759,
+          "searchMs": 3.8227000000188127,
+          "endToEndMs": 33.18999999994412,
+          "recall": 1,
+          "ndcg": 0.9828422279067397,
+          "hits": [
+            "cache-load",
+            "db-refresh",
+            "batch-opt",
+            "kb-session",
+            "wasm-fallback"
+          ]
+        },
+        {
+          "id": "q07",
+          "embeddingMs": 25.93999999994412,
+          "requestMs": 15.720000000204891,
+          "searchMs": 5.6459000000031665,
+          "endToEndMs": 41.830000000074506,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "kb-session",
+            "quality-eval",
+            "batch-opt",
+            "db-hybrid",
+            "db-vector"
+          ]
+        },
+        {
+          "id": "q08",
+          "embeddingMs": 20.50499999988824,
+          "requestMs": 13.174999999813735,
+          "searchMs": 4.445800000044983,
+          "endToEndMs": 34.46499999985099,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "local-privacy",
+            "wasm-fallback",
+            "batch-opt",
+            "db-hybrid",
+            "gpu-backend"
+          ]
+        },
+        {
+          "id": "q09",
+          "embeddingMs": 20.96999999973923,
+          "requestMs": 15.904999999795109,
+          "searchMs": 4.597199999960139,
+          "endToEndMs": 37.06000000005588,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "quant-fp16",
+            "quant-int8",
+            "batch-opt",
+            "cache-load",
+            "quality-eval"
+          ]
+        },
+        {
+          "id": "q10",
+          "embeddingMs": 35.515000000130385,
+          "requestMs": 18.084999999962747,
+          "searchMs": 6.128800000005867,
+          "endToEndMs": 54,
+          "recall": 0.5,
+          "ndcg": 0.9173194127129571,
+          "hits": [
+            "quality-eval",
+            "db-hybrid",
+            "db-refresh",
+            "batch-opt",
+            "kb-session"
+          ]
+        },
+        {
+          "id": "q11",
+          "embeddingMs": 32.25499999988824,
+          "requestMs": 18.979999999981374,
+          "searchMs": 6.103999999992084,
+          "endToEndMs": 51.56499999994412,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "db-vector",
+            "db-hybrid",
+            "wasm-fallback",
+            "quant-int8",
+            "local-privacy"
+          ]
+        },
+        {
+          "id": "q12",
+          "embeddingMs": 20.41000000014901,
+          "requestMs": 17.429999999701977,
+          "searchMs": 4.318299999984447,
+          "endToEndMs": 38.044999999925494,
+          "recall": 1,
+          "ndcg": 1,
+          "hits": [
+            "garden",
+            "local-privacy",
+            "wasm-fallback",
+            "quant-int8",
+            "cooking"
+          ]
+        }
+      ],
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895,
+      "modelBytes": 24010842,
+      "totalMs": 11934.049999999814
+    }
+  ],
+  "failures": []
+}

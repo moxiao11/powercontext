@@ -1,0 +1,57 @@
+{
+  "repo": "Xenova/bge-small-zh-v1.5",
+  "revision": "75c43b069aac4d136ba6bc1122f995fedcfd2781",
+  "measuredAt": "2026-10-28T07:42:04.581Z",
+  "commonBytes": 549873,
+  "files": [
+    {
+      "file": "onnx/model.onnx",
+      "bytes": 94851877,
+      "sha256": "69a0b846f4f116b5e6aabf9546ea6754d02264f3211a13a1bd69b31b8040749a",
+      "expected": "69a0b846f4f116b5e6aabf9546ea6754d02264f3211a13a1bd69b31b8040749a"
+    },
+    {
+      "file": "onnx/model_fp16.onnx",
+      "bytes": 47497427,
+      "sha256": "60d0fe5eb8d4e251d4b24dff010a2625c10a013503f0d09f625e8a9b0311315f",
+      "expected": "60d0fe5eb8d4e251d4b24dff010a2625c10a013503f0d09f625e8a9b0311315f"
+    },
+    {
+      "file": "onnx/model_quantized.onnx",
+      "bytes": 24010842,
+      "sha256": "15b717c382bcb518ba457b93ea6850ede7f4f1cd8937454aa06972366cd19bcc",
+      "expected": "15b717c382bcb518ba457b93ea6850ede7f4f1cd8937454aa06972366cd19bcc"
+    }
+  ],
+  "downloadLog": [],
+  "quantization": {
+    "per_channel": true,
+    "reduce_range": true,
+    "per_model_config": {
+      "model": {
+        "op_types": [
+          "Div",
+          "Constant",
+          "Erf",
+          "Shape",
+          "Cast",
+          "ReduceMean",
+          "Softmax",
+          "MatMul",
+          "Reshape",
+          "Slice",
+          "Unsqueeze",
+          "Sqrt",
+          "Transpose",
+          "Concat",
+          "Sub",
+          "Pow",
+          "Mul",
+          "Gather",
+          "Add"
+        ],
+        "weight_type": "QInt8"
+      }
+    }
+  }
+}

@@ -1,0 +1,374 @@
+{
+  "source": "reports/browser-benchmark.json",
+  "meta": {
+    "startedAt": "2026-10-28T08:29:52.488Z",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+    "hardwareConcurrency": 24,
+    "deviceMemory": 16,
+    "device": "Intel Core i7-14650HX / 16GB / Intel UHD + RTX 4060 Laptop (default adapter) / Windows / Codex Chromium IAB",
+    "crossOriginIsolated": true,
+    "db": "5.7.25-OceanBase seekdb-v1.4.0.0",
+    "model": {
+      "id": "Xenova/bge-small-zh-v1.5",
+      "revision": "75c43b069aac4d136ba6bc1122f995fedcfd2781",
+      "dimension": 512,
+      "queryPrefix": "为这个句子生成表示以用于检索相关文章：",
+      "maxTokens": 256,
+      "files": {
+        "fp32": {
+          "name": "model.onnx",
+          "bytes": 94851877,
+          "sha256": "69a0b846f4f116b5e6aabf9546ea6754d02264f3211a13a1bd69b31b8040749a"
+        },
+        "fp16": {
+          "name": "model_fp16.onnx",
+          "bytes": 47497427,
+          "sha256": "60d0fe5eb8d4e251d4b24dff010a2625c10a013503f0d09f625e8a9b0311315f"
+        },
+        "q8": {
+          "name": "model_quantized.onnx",
+          "bytes": 24010842,
+          "sha256": "15b717c382bcb518ba457b93ea6850ede7f4f1cd8937454aa06972366cd19bcc"
+        }
+      }
+    },
+    "corpus": {
+      "version": "tide-zh-1",
+      "k": 5,
+      "documents": [
+        {
+          "id": "db-hybrid",
+          "title": "混合检索的排序机制",
+          "text": "混合检索同时利用向量语义相似度与全文关键词匹配。seekdb 在数据库内执行两路召回，并通过 RRF 倒数排名融合生成最终排序。向量可以找到词语不同但含义接近的文档，全文索引能够精确匹配产品名和错误代码。"
+        },
+        {
+          "id": "db-refresh",
+          "title": "增量写入与索引刷新",
+          "text": "新文档写入 seekdb 后，需要刷新向量索引以保证搜索可见性。通过 CALL dbms_index_manager.refresh() 建立同步刷新屏障。批量写完后统一刷新通常比每写一条就刷新更快。刷新失败时应保留待刷新状态，允许用户重试。"
+        },
+        {
+          "id": "db-vector",
+          "title": "向量索引 HNSW",
+          "text": "HNSW 是一种基于分层图的近似最近邻检索算法。使用余弦距离比较归一化的文本向量，可快速寻找语义相近的内容。向量维度必须与模型输出一致，BGE-small-zh-v1.5 生成 512 维向量。"
+        },
+        {
+          "id": "gpu-backend",
+          "title": "浏览器中的 WebGPU",
+          "text": "WebGPU 可以利用用户设备的 GPU 加速浏览器本地神经网络推理。Transformers.js 通过 device: webgpu 显式选择后端，FP16 模型需要 shader-f16 特性。适配器不可用或模型运行失败时，应自动降级到 WebAssembly。"
+        },
+        {
+          "id": "wasm-fallback",
+          "title": "WASM 降级路径",
+          "text": "当浏览器不支持 WebGPU 时，ONNX Runtime Web 可以使用 WASM 在 CPU 执行 INT8 模型。开启跨源隔离后可以使用多线程，否则使用单线程。无论采用何种后端，文档向量和查询向量都在用户浏览器本地计算。"
+        },
+        {
+          "id": "quant-int8",
+          "title": "模型 INT8 量化",
+          "text": "INT8 量化把原本 FP32 的部分模型权重压缩成 8 位整数，减少文件体积和内存占用。动态量化在推理时计算激活量化参数，无需额外训练。需要用相同的查询集对比 Recall@K 与 nDCG@K，确认精度损失处于可接受范围。"
+        },
+        {
+          "id": "quant-fp16",
+          "title": "半精度浮点模型",
+          "text": "FP16 把 32 位浮点张量转换为 16 位浮点表示，理论上可将这些张量的存储减半。转换时可保留输入输出为 FP32，并对不支持半精度的算子保留精度。实际压缩比需要统计转换前后的 ONNX 文件字节数。"
+        },
+        {
+          "id": "batch-opt",
+          "title": "向量化的批处理优化",
+          "text": "将多个文本放入同一批次推理可以摊薄调度开销。按文本长度排序并分批，可以减少 padding 的无效计算。模型放在持久化 Web Worker 中复用，避免阻塞页面交互和每次查询重新加载模型。批大小过大也可能导致显存不足。"
+        },
+        {
+          "id": "cache-load",
+          "title": "模型缓存与首次加载",
+          "text": "模型首次使用需要下载并建立推理会话，延迟包含网络传输和运行时初始化。后续可以通过浏览器 Cache Storage 缓存模型文件。冷启动、缓存加载、预热和查询耗时应分开记录，重复实验报告中位数而不是最快一次。"
+        },
+        {
+          "id": "local-privacy",
+          "title": "本地推理与数据路径",
+          "text": "浏览器端侧推理不调用云端推理 API。模型权重可从公开仓库下载，然后由 WebGPU 或 WASM 在用户设备计算。生成的向量、原文和元数据通过本机 API 写入 seekdb。下载模型不意味着将文档送往远端模型服务。"
+        },
+        {
+          "id": "kb-session",
+          "title": "知识库隔离与会话状态",
+          "text": "每个知识库使用独立的 seekdb 集合。前端仅持久化当前集合 ID，服务端使用数据库记录写入版本与已刷新版本。切换集合时清空旧结果，并忽略晚到的旧请求；导入任务固定其目标集合，防止文本误写入其他知识库。"
+        },
+        {
+          "id": "quality-eval",
+          "title": "检索质量评估",
+          "text": "Recall@K 衡量前 K 个结果覆盖了多少相关文档，nDCG@K 同时关注相关性等级与排序位置。必须固定语料和人工标注的查询集，对 FP32、FP16、INT8 使用同一套指标。小型自建集只适合回归测试，不能代表公开排行榜表现。"
+        },
+        {
+          "id": "garden",
+          "title": "阳台薄荷种植",
+          "text": "薄荷喜欢充足的散射光和湿润土壤，夏季需要适当遮阴。盆栽应注意排水，避免积水导致烂根。定期修剪枝条可以促进侧芽生长。"
+        },
+        {
+          "id": "coffee",
+          "title": "手冲咖啡的水温",
+          "text": "手冲咖啡的风味受到水温、研磨度与粉水比影响。浅烘焙豆通常使用较高水温帮助萃取。水流要稳定，避免局部过度萃取造成苦涩。"
+        },
+        {
+          "id": "travel",
+          "title": "城市徒步准备",
+          "text": "徒步出行前需要查看天气，准备饮水与舒适的鞋。较长路线应规划休息点，并保留返程时间。夜间出行应选择照明良好的道路。"
+        },
+        {
+          "id": "cooking",
+          "title": "番茄鸡蛋汤",
+          "text": "先将番茄切块翻炒出汁，加水煮沸后沿锅边倒入打散的蛋液。关火前加入少量盐和葱花，避免长时间加热导致蛋花变老。"
+        }
+      ],
+      "queries": [
+        {
+          "id": "q01",
+          "text": "怎样把关键词与语义搜索的结果融合排序？",
+          "relevant": {
+            "db-hybrid": 3,
+            "db-vector": 1
+          }
+        },
+        {
+          "id": "q02",
+          "text": "新导入的内容搜索不到该怎么办？",
+          "relevant": {
+            "db-refresh": 3,
+            "kb-session": 1
+          }
+        },
+        {
+          "id": "q03",
+          "text": "设备没有 GPU 还能在浏览器里算向量吗？",
+          "relevant": {
+            "wasm-fallback": 3,
+            "gpu-backend": 2
+          }
+        },
+        {
+          "id": "q04",
+          "text": "如何缩小模型文件并检查检索精度是否下降？",
+          "relevant": {
+            "quant-int8": 3,
+            "quant-fp16": 2,
+            "quality-eval": 2
+          }
+        },
+        {
+          "id": "q05",
+          "text": "多个文本一起编码怎样减少补齐的开销？",
+          "relevant": {
+            "batch-opt": 3
+          }
+        },
+        {
+          "id": "q06",
+          "text": "为什么首次使用比后续查询慢？",
+          "relevant": {
+            "cache-load": 3,
+            "batch-opt": 1
+          }
+        },
+        {
+          "id": "q07",
+          "text": "切换知识库如何避免出现上一个集合的结果？",
+          "relevant": {
+            "kb-session": 3
+          }
+        },
+        {
+          "id": "q08",
+          "text": "我的文档会被发送到云端模型计算吗？",
+          "relevant": {
+            "local-privacy": 3,
+            "wasm-fallback": 1
+          }
+        },
+        {
+          "id": "q09",
+          "text": "使用 16 位浮点数能减少多少模型存储？",
+          "relevant": {
+            "quant-fp16": 3
+          }
+        },
+        {
+          "id": "q10",
+          "text": "衡量搜索结果覆盖率和排序好坏用什么指标？",
+          "relevant": {
+            "quality-eval": 3,
+            "quant-int8": 1
+          }
+        },
+        {
+          "id": "q11",
+          "text": "余弦距离和 512 维向量索引有什么关系？",
+          "relevant": {
+            "db-vector": 3
+          }
+        },
+        {
+          "id": "q12",
+          "text": "怎么在阳台上养好薄荷？",
+          "relevant": {
+            "garden": 3
+          }
+        }
+      ]
+    },
+    "selectedProfiles": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "repeats": 3,
+    "cachePolicy": "First repeat per profile clears transformers-cache; later repeats reuse it; HTTP disk cache is not cleared",
+    "timingScope": "performance.now; warm medians exclude first DB query"
+  },
+  "summary": [
+    {
+      "profile": "FP32 · WASM · 基线",
+      "repeats": 3,
+      "backend": "wasm",
+      "precision": "fp32",
+      "batch": 1,
+      "writeBatch": 1,
+      "refresh": "each-write",
+      "modelBytes": 94851877,
+      "throughput": 15.784852460958895,
+      "loadMs": 180.09499999973923,
+      "coldCacheStorageLoadMs": 901.464999999851,
+      "warmCacheStorageLoadMs": 168.49499999987893,
+      "warmupMs": 8.015000000130385,
+      "embeddingMs": 1013.6299999998882,
+      "writeMs": 286.8289000001969,
+      "refreshMs": 9547.206299999962,
+      "firstQueryMs": 65.85999999986961,
+      "queryEmbeddingMs": 28.755000000121072,
+      "searchMs": 4.885500000003958,
+      "endToEndMs": 44.080000000074506,
+      "recall": 0.8888888888888888,
+      "ndcg": 0.9589284538425078
+    },
+    {
+      "profile": "INT8 · WASM · 优化",
+      "repeats": 3,
+      "backend": "wasm",
+      "precision": "q8",
+      "batch": 8,
+      "writeBatch": 32,
+      "refresh": "after-import",
+      "modelBytes": 24010842,
+      "throughput": 19.901611408596896,
+      "loadMs": 92.55500000016764,
+      "coldCacheStorageLoadMs": 298.0800000000745,
+      "warmCacheStorageLoadMs": 85.94500000006519,
+      "warmupMs": 6.814999999944121,
+      "embeddingMs": 803.9550000000745,
+      "writeMs": 215.92210000002524,
+      "refreshMs": 517.3329000000376,
+      "firstQueryMs": 44.325000000186265,
+      "queryEmbeddingMs": 21.667500000214204,
+      "searchMs": 5.192650000011781,
+      "endToEndMs": 37.44000000017695,
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895
+    },
+    {
+      "profile": "FP32 · WebGPU · 基线",
+      "repeats": 3,
+      "backend": "webgpu",
+      "precision": "fp32",
+      "batch": 1,
+      "writeBatch": 1,
+      "refresh": "each-write",
+      "modelBytes": 94851877,
+      "throughput": 90.41591320074237,
+      "loadMs": 303.0200000000186,
+      "coldCacheStorageLoadMs": 766.535000000149,
+      "warmCacheStorageLoadMs": 251.43999999994412,
+      "warmupMs": 101.15499999979511,
+      "embeddingMs": 176.95999999996275,
+      "writeMs": 297.0610000001034,
+      "refreshMs": 9381.508799999952,
+      "firstQueryMs": 25.25499999988824,
+      "queryEmbeddingMs": 7.892499999841675,
+      "searchMs": 4.681899999995949,
+      "endToEndMs": 22.584999999962747,
+      "recall": 0.8888888888888888,
+      "ndcg": 0.9589284538425078
+    },
+    {
+      "profile": "FP16 · WebGPU · 优化",
+      "repeats": 3,
+      "backend": "webgpu",
+      "precision": "fp16",
+      "batch": 8,
+      "writeBatch": 32,
+      "refresh": "after-import",
+      "modelBytes": 47497427,
+      "throughput": 366.84626848373273,
+      "loadMs": 231.85000000009313,
+      "coldCacheStorageLoadMs": 436.9850000003353,
+      "warmCacheStorageLoadMs": 205.88999999989755,
+      "warmupMs": 18.179999999701977,
+      "embeddingMs": 43.61500000022352,
+      "writeMs": 194.4430000000284,
+      "refreshMs": 522.0811000000103,
+      "firstQueryMs": 41.234999999869615,
+      "queryEmbeddingMs": 9.3125,
+      "searchMs": 5.557099999976344,
+      "endToEndMs": 27.31000000005588,
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895
+    },
+    {
+      "profile": "INT8 · WASM · 批处理消融",
+      "repeats": 3,
+      "backend": "wasm",
+      "precision": "q8",
+      "batch": 1,
+      "writeBatch": 32,
+      "refresh": "after-import",
+      "modelBytes": 24010842,
+      "throughput": 16.294274599263613,
+      "loadMs": 138.0449999999255,
+      "coldCacheStorageLoadMs": 352.27499999990687,
+      "warmCacheStorageLoadMs": 119.2874999998603,
+      "warmupMs": 9.600000000093132,
+      "embeddingMs": 981.9399999999441,
+      "writeMs": 198.71730000001844,
+      "refreshMs": 626.8353999999817,
+      "firstQueryMs": 48.93999999994412,
+      "queryEmbeddingMs": 27.330000000074506,
+      "searchMs": 5.018349999998463,
+      "endToEndMs": 45.03250000020489,
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895
+    },
+    {
+      "profile": "INT8 · WASM · 刷新消融",
+      "repeats": 3,
+      "backend": "wasm",
+      "precision": "q8",
+      "batch": 8,
+      "writeBatch": 1,
+      "refresh": "each-write",
+      "modelBytes": 24010842,
+      "throughput": 15.366220245953913,
+      "loadMs": 113.28500000014901,
+      "coldCacheStorageLoadMs": 247.51500000013039,
+      "warmCacheStorageLoadMs": 105.04500000015832,
+      "warmupMs": 11.895000000018626,
+      "embeddingMs": 1041.2450000001118,
+      "writeMs": 266.60150000010617,
+      "refreshMs": 9722.09269999998,
+      "firstQueryMs": 45.544999999925494,
+      "queryEmbeddingMs": 22.959999999962747,
+      "searchMs": 4.698399999993853,
+      "endToEndMs": 37.294999999925494,
+      "recall": 0.9305555555555555,
+      "ndcg": 0.9643886884419895
+    }
+  ],
+  "failures": []
+}

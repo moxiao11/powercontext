@@ -1,0 +1,5 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { createReadStream } from 'node:fs';
+import path from 'node:path';
+export default defineConfig({ plugins: [react(),{name:'serve-onnx-runtime',configureServer(server){server.middlewares.use((req,res,next)=>{const m=req.url?.match(/^\/ort\/(ort-wasm[\w.-]+\.(mjs|wasm))(?:\?.*)?$/);if(!m)return next();res.setHeader('Cross-Origin-Opener-Policy','same-origin');res.setHeader('Cross-Origin-Embedder-Policy','require-corp');res.setHeader('Content-Type',m[2]==='mjs'?'text/javascript':'application/wasm');const stream=createReadStream(path.resolve('public/ort',m[1]));stream.on('error',()=>{res.statusCode=404;res.end('ONNX runtime asset missing. Run npm run runtime:copy')});stream.pipe(res);});}}], optimizeDeps: { include: ['@huggingface/transformers'] }, worker: { format: 'es' }, server: { watch: { ignored: ['**/public/models/**', '**/public/ort/**'] }, proxy: { '/api': 'http://127.0.0.1:8788' }, headers: { 'Cross-Origin-Opener-Policy':'same-origin','Cross-Origin-Embedder-Policy':'require-corp' } }, build: { target: 'es2022', copyPublicDir: false } });
