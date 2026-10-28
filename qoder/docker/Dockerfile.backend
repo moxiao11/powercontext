@@ -1,0 +1,43 @@
+# LabTrace FastAPI backend with embedded OceanBase seekdb.
+#
+# Build context is the qoder/ directory:
+#   docker build -f docker/Dockerfile.backend -t labtrace-backend .
+#
+# PIP_INDEX_URL can be pointed at a mirror, e.g.
+#   --build-arg PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+# BASE_IMAGE can be pointed at a registry mirror when docker.io is unreachable, e.g.
+#   --build-arg BASE_IMAGE=docker.m.daocloud.io/library/python:3.12-slim
+ARG BASE_IMAGE=python:3.12-slim
+
+FROM ${BASE_IMAGE}
+
+ARG PIP_INDEX_URL=https://pypi.org/simple
+ENV PIP_INDEX_URL=${PIP_INDEX_URL} \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /app
+
+COPY backend/requirements.txt backend/requirements.lock ./
+RUN pip install -r requirements.txt
+
+COPY backend/app ./app
+
+RUN useradd --create-home --uid 10001 labtrace \
+    && mkdir -p /data \
+    && chown -R labtrace:labtrace /app /data
+USER labtrace
+
+ENV SEEKDB_MODE=embedded \
+    SEEKDB_PATH=/data/labtrace-seekdb \
+    LABTRACE_HOST=0.0.0.0 \
+    LABTRACE_PORT=8100
+
+VOLUME ["/data"]
+EXPOSE 8100
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=40s --retries=12 \
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8100/api/health', timeout=4).status==200 else 1)"
+
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8100"]

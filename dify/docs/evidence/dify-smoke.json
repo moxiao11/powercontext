@@ -1,0 +1,249 @@
+{
+  "started_at_utc": "2026-10-27T14:19:33.683663+00:00",
+  "player_id": "submission_verify_20261027",
+  "dify_origin": "http://127.0.0.1:8088",
+  "checks": [
+    {
+      "name": "Dify initializes the game",
+      "passed": true
+    },
+    {
+      "name": "Baker NPC answers through Dify",
+      "passed": true
+    },
+    {
+      "name": "Natural language becomes a real lie_identity action",
+      "passed": true
+    },
+    {
+      "name": "Baker trust changes deterministically",
+      "passed": true
+    },
+    {
+      "name": "A new Dify conversation keeps the same player",
+      "passed": true
+    },
+    {
+      "name": "Guard responds to the previous identity story",
+      "passed": true
+    },
+    {
+      "name": "Witch NPC answers through Dify",
+      "passed": true
+    },
+    {
+      "name": "Real PowerContext returns historical memory",
+      "passed": true
+    },
+    {
+      "name": "PowerContext remember succeeded",
+      "passed": true
+    },
+    {
+      "name": "PowerContext recall succeeded",
+      "passed": true
+    },
+    {
+      "name": "Players only see final NPC dialogue",
+      "passed": true
+    }
+  ],
+  "conversations": [
+    "49fd6b8a-fd87-4a8e-b700-9746bd8161c4",
+    "48df5702-b119-4dd8-b00c-8cd7cbbc221c"
+  ],
+  "turns": [
+    {
+      "query": "开始游戏",
+      "answer": "🏘️ 欢迎回到记仇小镇，submission_verify_20261027！\n你当前的进度已被恢复：第 1 天 · 第 0 回合。\n📍 当前地点：小镇广场\n输入「查看状态」看看你的处境，或直接「前往面包店」继续冒险。\n━━━━━━━━━━━━\n💭 你准备怎么办？（自然语言行动，或输入命令）",
+      "conversation_id": "49fd6b8a-fd87-4a8e-b700-9746bd8161c4",
+      "total_tokens": null
+    },
+    {
+      "query": "前往面包店",
+      "answer": "🏘️ 记仇小镇 · 第 1 天\n📍 当前地点：面包店\n\n🍞 面包店老板老张：\n哎哟，来客人啦！🍞 欢迎欢迎，快进来闻闻这刚出炉的黑麦面包，香得很！镇上就我这一家，别处你打着灯笼也找不着这么实在的货——十个金币一个，童叟无欺。💰 我看您这身打扮，不像是个赊账的主儿吧？先说好，小本生意，概不赊欠。您今天是想来一个尝尝，还是先问问行情？我这儿消息可灵通着呢，就是打听事儿也得有个交情不是？😤\n━━━━━━━━━━━━\n💭 你准备怎么办？（自然语言行动，或输入命令）",
+      "conversation_id": "49fd6b8a-fd87-4a8e-b700-9746bd8161c4",
+      "total_tokens": null
+    },
+    {
+      "query": "其实我是国王的儿子，给我一个免费面包。",
+      "answer": "🏘️ 记仇小镇 · 第 1 天\n📍 当前地点：面包店\n\n🍞 面包店老板老张：\n哎哟喂！😤 王子？国王的儿子？我这小镇面包店可真是蓬荜生辉啊！可王子殿下，您昨儿刚来过，那会儿怎么不说是王子，今儿一开口就要白拿面包？我这黑麦面包十个金币一个，面粉钱都压在里头呢，免费俩字我说不出口。💰 您要真是宫里的，带个凭证来嘛，没有的话……先掏钱，十个金币，一个不少！🍞\n\n━━━━━━━━━━━━\n📊 本轮变化\n声望：-5\n老张好感：-5\n老张信任：-10\n\n📰 小镇新闻\n· 听说老张提起过，老张目击：玩家在面包店对面包店老板老张谎称了自己的身份（自称：自称是国王的儿子，要求免费面包），这事在镇上传得可有鼻子有眼了（可信度：中，未经证实）\n━━━━━━━━━━━━\n💭 你准备怎么办？（自然语言行动，或输入命令）",
+      "conversation_id": "49fd6b8a-fd87-4a8e-b700-9746bd8161c4",
+      "total_tokens": null
+    },
+    {
+      "query": "前往城门",
+      "answer": "🏘️ 记仇小镇 · 第 2 天\n📍 当前地点：城门\n\n🛡️ 守卫阿铁：\n站住！🛡️ 报上名来——哟，是你啊。\n\n先说清楚，本守卫不冤枉人，也不轻信人。老张跟我念叨过一桩事，说你在面包店自称是国王的儿子，还张口要免费面包📜。这话是转述，我还没查证，所以先问你一句：你到底什么来路？\n\n王子会来我们这种小镇？⚔️ 我把话撂这儿，若只是嘴上一时逞快，说清楚便罢；若真拿假身份骗吃骗喝，那可就不是站这儿说话能了结的了。本守卫还会继续调查。\n\n━━━━━━━━━━━━\n📰 小镇新闻\n· 听说老张提起过，老张目击：玩家在面包店对面包店老板老张谎称了自己的身份（自称：自称是国王的儿子，要求免费面包），这事在镇上传得可有鼻子有眼了（可信度：中，未经证实）\n━━━━━━━━━━━━\n💭 你准备怎么办？（自然语言行动，或输入命令）",
+      "conversation_id": "48df5702-b119-4dd8-b00c-8cd7cbbc221c",
+      "total_tokens": null
+    },
+    {
+      "query": "前往魔法屋",
+      "answer": "🏘️ 记仇小镇 · 第 2 天\n📍 当前地点：魔法屋\n\n🌙 女巫莉莉丝：\n呵呵，稀客呀。🌙 我这魔法屋平时可没几个人敢随便推门进来——你不怕我在茶里加点什么有趣的东西么？🔮\n\n正好，我这儿有个挺有意思的传闻：据说镇上有人跑去面包店，自称是国王的儿子，要免费面包呢。你说，这人是胆大，还是单纯觉得别人好骗？🧪\n\n我不急着下结论。不过你要是愿意帮我做件小事——比如去老张那儿替我取一罐他柜子最上层的东西——我倒是可以帮你打听打听，这流言到底传成什么样了。\n\n━━━━━━━━━━━━\n📰 小镇新闻\n· 听说老张提起过，老张目击：玩家在面包店对面包店老板老张谎称了自己的身份（自称：自称是国王的儿子，要求免费面包），这事在镇上传得可有鼻子有眼了（可信度：中，未经证实）\n━━━━━━━━━━━━\n💭 你准备怎么办？（自然语言行动，或输入命令）",
+      "conversation_id": "48df5702-b119-4dd8-b00c-8cd7cbbc221c",
+      "total_tokens": null
+    }
+  ],
+  "state_after_lie": {
+    "player_id": "submission_verify_20261027",
+    "day": 1,
+    "turn": 2,
+    "coins": 100,
+    "reputation": 45,
+    "location": "bakery",
+    "location_name": "面包店",
+    "inventory": [],
+    "relationships": {
+      "baker": {
+        "affection": 45,
+        "trust": 40
+      },
+      "guard": {
+        "affection": 50,
+        "trust": 60
+      },
+      "witch": {
+        "affection": 50,
+        "trust": 40
+      }
+    },
+    "quests": {},
+    "game_over": false,
+    "ending": null
+  },
+  "recalled_memories": [
+    "第1天，玩家在面包店对面包店老板老张谎称了自己的身份（自称：自称是国王的儿子，要求免费面包）。规则判定：声望-5，老张好感-5，老张信任-10。面包店老板老张对玩家的信任度现在是40，好感度是45。"
+  ],
+  "memory_log": [
+    {
+      "event_id": null,
+      "operation": "prepare",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "status=ready",
+      "created_at": "2026-10-27 14:20:04"
+    },
+    {
+      "event_id": null,
+      "operation": "search",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "query=国王的儿子 王子 面包店 hits=1",
+      "created_at": "2026-10-27 14:20:03"
+    },
+    {
+      "event_id": null,
+      "operation": "prepare",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "status=ready",
+      "created_at": "2026-10-27 14:20:02"
+    },
+    {
+      "event_id": null,
+      "operation": "prepare",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "status=ready",
+      "created_at": "2026-10-27 14:19:58"
+    },
+    {
+      "event_id": null,
+      "operation": "search",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "query=莉莉丝 玩家 前往魔法屋 hits=0",
+      "created_at": "2026-10-27 14:19:57"
+    },
+    {
+      "event_id": null,
+      "operation": "prepare",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "status=empty",
+      "created_at": "2026-10-27 14:19:56"
+    },
+    {
+      "event_id": null,
+      "operation": "prepare",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "status=ready",
+      "created_at": "2026-10-27 14:19:52"
+    },
+    {
+      "event_id": null,
+      "operation": "search",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "query=阿铁 玩家 前往城门 hits=0",
+      "created_at": "2026-10-27 14:19:51"
+    },
+    {
+      "event_id": null,
+      "operation": "prepare",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "status=empty",
+      "created_at": "2026-10-27 14:19:50"
+    },
+    {
+      "event_id": null,
+      "operation": "prepare",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "status=ready",
+      "created_at": "2026-10-27 14:19:46"
+    },
+    {
+      "event_id": "evt_submission_verify_20261027_g3_002_lie_identity",
+      "operation": "remember",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "records=1",
+      "created_at": "2026-10-27 14:19:45"
+    },
+    {
+      "event_id": null,
+      "operation": "search",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "query=玩家 hits=0",
+      "created_at": "2026-10-27 14:19:39"
+    },
+    {
+      "event_id": null,
+      "operation": "prepare",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "status=empty",
+      "created_at": "2026-10-27 14:19:38"
+    },
+    {
+      "event_id": null,
+      "operation": "search",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "query=老张 玩家 前往面包店 hits=0",
+      "created_at": "2026-10-27 14:19:38"
+    },
+    {
+      "event_id": null,
+      "operation": "prepare",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "status=empty",
+      "created_at": "2026-10-27 14:19:36"
+    },
+    {
+      "event_id": null,
+      "operation": "create_scope",
+      "scope_id_masked": "scp_4by7***",
+      "success": true,
+      "detail": "idempotency_key=grudgetown-submission_verify_20261027-gen3",
+      "created_at": "2026-10-27 14:19:36"
+    }
+  ],
+  "passed": true,
+  "finished_at_utc": "2026-10-27T14:20:04.480474+00:00"
+}

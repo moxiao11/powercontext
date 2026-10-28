@@ -1,0 +1,720 @@
+# LabTrace —— AI 科研记忆与知识管理工作台
+
+## 一、你的角色
+
+你是一支由资深全栈工程师、AI Agent 工程师、数据库工程师、UI/UX 设计师和测试工程师组成的软件开发团队。
+
+请使用 Qoder 的智能体开发能力，帮助我从零构建一个可运行、可部署、具有实际科研价值的开源项目。
+
+**项目名称：LabTrace**
+
+**项目定位：** 一个具有长期记忆、论文知识检索、实验过程追踪和科研进度接续能力的 AI 科研工作台。
+
+**核心理念：让 AI 不只回答科研问题，还能记住用户研究了什么、尝试了什么、为什么失败，以及下一步应该做什么。**
+
+本项目用于 Qoder × OceanBase 2026 开发比赛，必须满足比赛的技术要求。
+
+## 二、比赛约束（必须遵守）
+
+比赛指定仓库：
+
+
+https://github.com/oceanbase/powercontext/tree/2026-competition-ecosystem
+
+
+1. 基于 `2026-competition-ecosystem` 分支进行开发，保留其现有项目结构。
+2. 将 LabTrace 相关代码、配置、文档和演示资产放入仓库对应的 `qoder/` 目录。
+3. 项目的主要开发工作必须在 Qoder 中完成。
+4. 必须实际集成并使用 OceanBase seekdb 和 PowerContext。
+5. 使用 Qoder Sites 发布项目网站，并设置为任何人都可访问。
+6. 最终提供运行说明、技术架构说明、验证样例、Qoder 开发记录和完整源码。
+7. 不允许仅通过安装组件、模拟数据库结果或静态展示页面来满足技术要求。
+
+开发之前，请检查仓库已有目录结构、官方 README、依赖和比赛要求，避免破坏其他赛题目录。
+
+## 三、核心产品功能
+
+### 功能 1：智能论文知识库
+
+实现完整的科研资料导入、管理和检索功能。
+
+支持：
+
+- 上传 PDF、Markdown、TXT 文档
+- 自动提取正文和文档元数据
+- PDF 文本按段落切分，并保留原始页码信息
+- 将文档分块和索引存入 seekdb
+- 支持关键词检索、向量检索及混合检索
+- 按论文标题、研究主题和上传时间筛选
+- 使用 LLM 根据检索证据回答科研问题
+- 回答中显示论文名称、页码和引用段落
+- 用户可以点击引用查看对应原始内容
+
+示例：
+
+用户上传三篇关于 Embodied Question Answering 的论文。
+
+用户提问：
+
+“这些论文分别使用了什么记忆架构？它们之间有什么不同？”
+
+系统从 seekdb 检索相关论文段落，生成有来源依据的比较结论。
+
+要求：
+
+检索必须真实经过 seekdb，不得使用预先写死的搜索结果。
+
+对于缺少足够证据的问题，明确说明无法确认，不得捏造论文内容。
+
+### 功能 2：科研实验追踪
+
+用户可以记录每一次科研实验。
+
+每条实验包含：
+
+- 实验名称和所属研究项目
+- 实验目标与假设
+- 使用的方法
+- 模型、参数及配置
+- 数据集名称
+- 实验结果和评价指标
+- 遇到的问题
+- 失败原因分析
+- 下一步改进方向
+- 创建时间与更新时间
+
+支持 Markdown 实验日志和 JSON 指标导入。
+
+系统可以检索历史实验，并回答：
+
+“之前为什么放弃这个方案？”
+
+“哪些实验使用了相同的数据集？”
+
+“目前效果最好的实验是哪一次？”
+
+“最近三次实验分别改进了什么？”
+
+实验数据使用 seekdb 保存和查询，重要结论、决策及后续计划写入 PowerContext。
+
+### 功能 3：科研长期记忆引擎（核心创新）
+
+这是项目最重要的功能。
+
+使用 PowerContext 实现跨会话科研记忆。
+
+需要管理以下记忆：
+
+1. Research Profile：用户的研究方向与长期目标
+2. Project Context：当前项目背景与研究任务
+3. Decisions：研究过程中做出的重要决策及原因
+4. Failures：失败尝试及失败原因
+5. Progress：任务完成情况
+6. Next Actions：后续研究计划
+
+用户每次完成科研工作后，可以点击：
+
+**保存本次研究进度**
+
+系统自动总结当前科研会话，提取已完成事项、关键结论、未解决问题及后续步骤，写入 PowerContext。
+
+当用户关闭会话并重新打开时，系统能够读取此前的研究上下文。
+
+例如：
+
+第一天：
+
+“我准备采用 YOLO-World + SAM 进行实例检测，先测试无记忆 baseline。”
+
+第二天开启新的科研会话：
+
+“继续昨天的工作。”
+
+系统应能够恢复真实保存的研究上下文，回答：
+
+“昨天确定了检测方案，目前准备验证无记忆 baseline，下一步是实现实验评估。”
+
+要求：
+
+- 使用 PowerContext 实际持久化并读取记忆
+- 不允许只依靠浏览器 localStorage 模拟跨会话记忆
+- 实现研究记忆的查询、更新和删除
+- 支持多个独立研究项目
+- 不同项目的记忆相互隔离
+- 提供查看记忆来源的功能
+- 支持用户纠正错误或过期的记忆
+- 避免把模型猜测当作已经确认的研究事实
+
+优先使用 PowerContext 官方支持的 Memory、Handoff 等能力，实际接口和数据结构以当前仓库及官方 SDK 文档为准。
+
+### 功能 4：AI 科研助手
+
+实现具备科研上下文的 AI 对话页面。
+
+助手回答问题时，应根据问题类型选择数据来源。
+
+**论文问题：** 检索 seekdb 中的论文证据。
+
+**实验问题：** 查询 seekdb 中的实验记录。
+
+**研究进展问题：** 读取 PowerContext 中的科研记忆。
+
+**复杂综合问题：** 将两种数据结合形成回答。
+
+回答需要尽量包含：
+
+- 直接结论
+- 依据与引用
+- 相关历史研究决策
+- 建议的下一步工作
+
+需要提供“当前回答使用了哪些数据”的可解释性面板。
+
+例如：
+
+知识来源：Sequential-EQA.pdf，第 6 页
+
+历史记忆：2026-10-25 保存的研究决策
+
+实验记录：Experiment #12
+
+对无法核实的信息，必须明确告知用户。
+
+### 功能 5：自动科研周报
+
+系统能够根据指定日期范围，自动汇总：
+
+- 本周阅读的论文
+- 重点研究结论
+- 完成的实验
+- 实验结果与变化
+- 遇到的问题
+- 已经做出的技术决策
+- 尚未完成的任务
+- 下周研究计划
+
+生成结构清晰的 Markdown 周报。
+
+支持预览、编辑、复制与下载。
+
+周报中的实验指标及已完成事项必须基于实际记录，不得虚构。
+
+### 功能 6：科研知识关联图（增强功能）
+
+在核心功能完成并通过验收后实现。
+
+可使用 React Flow 或其他成熟的可视化库。
+
+展示论文、研究项目、实验和研究决策之间的关系。
+
+例如：
+
+Sequential-EQA → 记忆机制 → 我的 3D-MEM 项目 → Experiment #12 → 失败结论 → 新实验计划
+
+点击节点可以查看对应证据或历史记录。
+
+该功能不应影响核心功能的开发与交付。
+
+## 四、技术架构
+
+优先采用以下技术栈：
+
+前端：
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- Lucide Icons
+- React Router
+- TanStack Query
+- React Flow（可选）
+
+后端：
+
+- Python
+- FastAPI
+- Pydantic
+- PyMuPDF
+- 官方支持的数据库驱动和 SDK
+
+核心基础设施：
+
+- OceanBase seekdb
+- OceanBase PowerContext
+- 可配置的 OpenAI 兼容大模型 API
+- Embedding 服务
+
+要求：
+
+1. seekdb 负责论文分块、检索索引、实验记录等结构化与检索型数据。
+2. PowerContext 负责研究状态、长期记忆、历史决策和跨会话接续。
+3. 两者职责明确，避免重复维护容易不一致的状态。
+4. 对记忆更新与实验记录之间的关联设计可追踪的标识。
+5. API Key、数据库密码等敏感信息必须放在服务端环境变量中。
+6. 提供 `.env.example`。
+7. 不得将真实凭据提交到 Git。
+8. 不允许假设某个 SDK 方法或数据库 API 一定存在，必须先阅读文档、确认版本，再编写集成代码。
+
+优先提供 Docker Compose 配置，方便评审运行数据库和服务。
+
+前后端采用清晰的模块化架构，避免把所有代码集中在一个文件中。
+
+## 五、UI/UX 设计
+
+请把 LabTrace 设计成一个真正能日常使用的现代科研 SaaS 产品。
+
+视觉风格：
+
+- Linear、Notion、Raycast 风格的简洁专业界面
+- 深色模式优先，同时支持浅色模式
+- 深蓝和中性色作为基础色
+- 蓝紫色作为主要强调色
+- 精致的卡片、圆角、边框及轻量交互动画
+- 清晰的层级、间距和排版
+- 桌面端优先，兼容平板与移动设备
+
+不要设计成普通的聊天机器人界面。
+
+需要一个完整的科研工作台。
+
+建议左侧导航：
+
+- Overview：科研总览
+- Library：论文知识库
+- Experiments：实验中心
+- AI Research：科研助手
+- Memory：长期记忆
+- Reports：科研周报
+- Settings：系统设置
+
+首页 Dashboard 展示：
+
+- 当前研究项目
+- 最近阅读论文
+- 最近实验
+- 本周研究进度
+- 当前待办任务
+- 最近形成的研究结论
+- 继续上次研究按钮
+
+请设计合理的空状态、加载状态、错误提示、操作反馈和确认弹窗。
+
+所有核心按钮必须有实际功能，不允许出现大量只能点击却没有效果的装饰性功能。
+
+## 六、最重要的验收演示
+
+请内置一套可重复执行的科研测试案例。
+
+主题使用：
+
+**Embodied Question Answering 与 3D Scene Memory**
+
+准备三类演示资料：
+
+1. 可合法分发的样例论文或原创测试文档
+2. 可核对的示例实验记录
+3. 可测试的科研决策与任务进度
+
+实现以下完整流程。
+
+### 演示 A：论文检索
+
+1. 导入论文或样例文档。
+2. 在 seekdb 建立索引。
+3. 输入有关论文方法的问题。
+4. 系统返回答案和来源。
+5. 展示真实数据库检索记录。
+
+### 演示 B：实验追踪
+
+1. 新建一次实验。
+2. 保存实验参数和结果。
+3. 再新增一个实验进行对比。
+4. 查询两个实验的差异。
+5. 确认结果来自数据库中的实际记录。
+
+### 演示 C：跨会话记忆
+
+1. 创建科研项目。
+2. 在第一个会话中记录研究方案、失败原因和下一步计划。
+3. 保存研究进度到 PowerContext。
+4. 关闭原会话。
+5. 开启全新会话。
+6. 输入“我上次研究到哪里了？”
+7. 系统恢复此前保存的决策和待办。
+8. 展示 PowerContext 的真实读写记录。
+
+这是整个项目的重点展示内容，必须稳定、可重复。
+
+### 演示 D：自动周报
+
+1. 使用前面录入的资料与实验记录。
+2. 生成本周科研周报。
+3. 验证其中的完成事项和指标。
+4. 导出 Markdown 文件。
+
+所有示例数据都要明确标注为示例，不要伪装成真实科研结果。
+
+## 七、Qoder 开发流程
+
+请充分利用 Qoder 的规划、编程、调试和测试能力。
+
+按照以下顺序执行：
+
+### 阶段一：代码库分析与规划
+
+- 查看当前仓库结构
+- 阅读比赛对应分支与技术文档
+- 确认 seekdb、PowerContext 的可用接入方式
+- 确认 Qoder Sites 发布约束
+- 输出合理的系统架构和开发计划
+- 确定需要的外部服务与环境变量
+
+将计划保存为：
+
+`qoder/docs/DEVELOPMENT_PLAN.md`
+
+### 阶段二：基础功能开发
+
+先实现：
+
+1. 前端页面和导航
+2. FastAPI 后端
+3. seekdb 连接与数据表
+4. 论文上传与内容提取
+5. 论文检索和引用
+6. 实验记录管理
+
+要求每完成一个模块，都执行相关测试和必要的调试。
+
+### 阶段三：长期记忆
+
+实现：
+
+1. PowerContext 连接与验证
+2. 研究记忆写入
+3. 研究记忆检索
+4. 新会话上下文恢复
+5. Memory 管理界面
+6. 研究状态 Handoff
+
+优先保证真实读写、数据隔离和错误处理。
+
+### 阶段四：AI 整合
+
+实现：
+
+1. AI 科研助手
+2. 根据问题选择数据源
+3. 检索内容与长期记忆整合
+4. 引用追踪
+5. 自动科研周报
+
+### 阶段五：测试与部署
+
+执行：
+
+- API 单元测试
+- 数据库读写测试
+- PowerContext 持久化测试
+- 跨会话恢复测试
+- 核心业务端到端测试
+- 前端构建测试
+- 环境配置验证
+
+通过 Qoder Sites 发布网站，使用个人账号配置公开访问。
+
+若 Qoder Sites 当前能力不支持直接运行所需后端，请采用其支持的正式发布方式：由 Sites 承载公开前端或项目展示入口，后端部署在适合的服务环境，并提供完整可复现说明。
+
+不得将只包含静态假数据的页面宣称为完整可运行的产品。
+
+## 八、项目交付要求
+
+在 `qoder/` 内提供清晰的项目结构，以及以下交付文件。
+
+`README.md`
+
+包含项目介绍、功能说明、架构和截图。
+
+`docs/ARCHITECTURE.md`
+
+详细说明模块关系，以及 seekdb 和 PowerContext 各自承担的职责。
+
+`docs/SETUP.md`
+
+提供从零开始的完整配置和启动流程，包括依赖版本、数据库部署、环境变量和启动命令。
+
+`docs/VERIFICATION.md`
+
+至少包含一组完整验证样例，写清初始数据、输入、操作步骤、预期输出和检查方法。
+
+`docs/QODER_DEVELOPMENT_LOG.md`
+
+记录 Qoder 在需求规划、代码编写、调试、测试、部署中的实际工作。提供关键对话截图的保存位置及待补充的账号 UID 信息，不得伪造截图、UID 或开发历史。
+
+`docs/TECH_INTEGRATION.md`
+
+说明 seekdb 的真实表结构与检索流程，以及 PowerContext 的记忆写入、读取和跨会话恢复流程。提供可复现的日志或验证方法，注意对敏感信息脱敏。
+
+`docs/DEPLOYMENT.md`
+
+记录 Qoder Sites 发布步骤及前后端的部署方式，最终补充真实站点 URL。
+
+`docs/USER_TESTING.md`
+
+提供可用于记录真实用户测试的模板，包括任务完成率、使用耗时和反馈。没有收集到的数据应保留为空，不得编造。
+
+同时提供：
+
+- `.env.example`
+- Docker Compose 配置
+- 数据库初始化脚本
+- 样例数据
+- 自动化测试
+- 必要的 `.gitignore`
+
+## 九、工程与质量要求
+
+1. 确保可以在干净环境中按照文档运行。
+2. 核心代码必须具有合理的类型标注与错误处理。
+3. 数据库操作使用参数化查询，不拼接不可信 SQL。
+4. 上传文件要进行类型、大小和安全校验。
+5. AI 输出与原始证据分离保存。
+6. 所有科研数据按项目隔离。
+7. 对外公开演示时，避免暴露私人研究资料或其他用户数据。
+8. 系统需要有明确的服务连接状态和错误提示。
+9. 没有配置大模型 API 时，仍应可以执行资料导入、数据库检索和实验记录等非生成式基础功能。
+10. 不得使用模拟接口代替最终交付中的 seekdb 或 PowerContext 真实集成。
+11. 若实际环境无法完成部署，应如实列出未验证部分，而不是声称已经成功。
+
+## 十、最终目标
+
+最终交付的是一个真正能够帮助科研人员：
+
+**检索过去的知识、理解过去的实验、恢复过去的决策，并继续当前研究工作的 AI 平台。**
+
+用户打开 LabTrace，不需要反复向 AI 解释自己研究什么、之前做到哪里。
+
+系统能够利用已有知识和历史记忆，帮助用户高效开展下一步工作。
+
+请特别关注以下四项：
+
+**第一：真实技术集成。** seekdb 和 PowerContext 必须能够在验收中体现实际作用。
+
+**第二：功能闭环。** 上传资料 → 检索证据 → 记录实验 → 保存研究记忆 → 跨会话恢复 → 生成周报。
+
+**第三：优秀的 UI 和体验。** 界面达到成熟 SaaS 产品的视觉水平，同时保证核心功能可用。
+
+**第四：比赛交付。** 代码、部署、运行文档、验证样例以及 Qoder 开发记录必须齐全。
+
+不要仅给出架构建议、伪代码或静态原型。
+
+**现在开始执行：首先检查比赛仓库与相关技术文档，确认技术可行性，制定阶段开发计划，然后直接进入第一阶段代码开发。**
+
+尽可能自主解决一般性的技术问题；仅在需要我提供 API Key、账号权限或无法自主决定的外部资源时向我提出明确的问题。
+
+核心功能尚未完成和测试通过前，不要优先开发装饰性功能或复杂多 Agent 功能。
+2026-10-27 17:28
+我先检查本地目录和比赛仓库结构，确认 seekdb / PowerContext 的接入方式，然后制定开发计划并进入第一阶段开发。
+
+当前目录是空的。我将克隆比赛仓库的 2026-competition-ecosystem 分支到工作目录。
+
+克隆失败（网络连接被重置），我重试并尝试镜像加速。
+
+目录仍是空的，GitHub 直连被重置。尝试镜像源克隆。
+
+仓库克隆成功。2026-competition-ecosystem 分支是空脚手架：五个赛题目录（dify/gaode/minimax/qoder/stepfun），Qoder 赛题对应 qoder/。现在获取主分支的 PowerContext SDK 文档与代码。
+
+主分支已归档为 archive/powercontext-main，当前主开发分支应为 2026-competition。我来查看它的结构。
+
+2026-competition 分支包含完整的 PowerContext SDK 与比赛挑战目录。我创建一个 worktree 以便阅读其文档与代码。
+
+Worktree 已创建。现在阅读核心文档，了解 PowerContext 与 seekdb 的接入方式。
+
+README 已确认 PowerContext 提供 Python 客户端 / HTTP API / MCP / 进程内 SDK 四种接入方式。现在阅读比赛 README 与开发接口文档。
+
+比赛 README 是 PowerContext 训练营的自测题，而 Qoder 赛题是在 qoder/ 目录下构建应用集成 seekdb + PowerContext。现在深入阅读开发接口文档和 seekdb 用法。
+
+核心信息已确认：PowerContext 通过 HTTP Server（默认 :8000）提供 Scope/Memory/Handoff/context prepare 等 API，Scope 即项目隔离键。现在创建任务清单并深入调研 seekdb。
+
+现在并行派出两个调研 agent：一个查 seekdb 的接入与混合检索 SQL，一个查 PowerContext HTTP API 全貌。
+
+两份调研报告已回来，关键结论：
+
+seekdb：嵌入式 pylibseekdb 仅支持 Linux/macOS，Windows 原生不可用；SQL 层支持 VECTOR 列、HNSW 向量索引、FULLTEXT 索引和单 SQL 混合检索（MATCH...AGAINST + l2_distance...APPROXIMATE）。Windows 上需要 WSL2 或 Docker 部署 OceanBase。
+PowerContext：HTTP API 完整确认（scope/memory/handoff/prepare），显式记忆写入不需要模型 API，kind 为自由字符串。
+现在检查本机 WSL 与 Docker 可用性，决定部署方案。
+
+WSL2 Ubuntu-22.04 和 Docker Desktop 都可用。最优方案：在 WSL2 中使用嵌入式 seekdb（pylibseekdb），PowerContext Server 与 LabTrace 后端都运行在 WSL2，Windows 上的前端通过 localhost 访问。先在 WSL 里验证嵌入式 seekdb 可用性。
+
+WSL 有 Python 3.10，需要用 uv 安装 Python 3.12 + pylibseekdb。开始安装并做嵌入式 seekdb 冒烟测试。
+
+pylibseekdb 安装成功。现在做嵌入式 seekdb 冒烟测试：建 VECTOR 表、插入向量、执行近似检索。
+
+连接选项的键名不对，先查看实际的 connection_options 内容。
+
+嵌入式 seekdb 通过 Unix socket 暴露连接。更新冒烟测试使用 unix_socket 连接。
+
+嵌入式 seekdb 冒烟测试完全通过：VECTOR 列、HNSW 索引、全文索引、ANN/FTS/混合检索单 SQL 全部可用（版本 5.7.25-OceanBase seekdb-v1.4.0.0）。
+
+接下来验证 PowerContext Server 以 seekdb 为存储后端运行。先确认环境变量格式。
+
+读取文件
+环境变量格式确认。在 WSL 中安装 PowerContext v1.2.0（含 seekdb extra）并启动 Server 验证。
+
+调度秒数不能为 0，去掉那两行用默认值重启。
+
+Qoder 的回复已被你终止。
+2026-10-27 17:56
+由 AI 生成
+继续开始搭建这个平台
+2026-10-27 19:29
+好的，继续。先在 WSL 里用一个启动脚本把 PowerContext Server 跑起来并验证记忆读写闭环，然后进入开发规划与代码搭建。
+
+Qoder 的回复已被你终止。
+2026-10-27 19:29
+由 AI 生成
+切换了模型，继续做
+2026-10-27 19:29
+模型已切换，继续。技术可行性已经验证完毕（WSL2 嵌入式 seekdb 冒烟测试通过：VECTOR 列 + HNSW 索引 + 全文索引 + 单 SQL 混合检索；PowerContext v1.2.0 已安装，API 契约已从 OpenAPI 文档确认）。现在进入第一阶段：编写开发计划并搭建项目骨架。
+
+开发计划已保存到 
+DEVELOPMENT_PLAN.md
+。现在搭建后端骨架：配置层与 seekdb 连接层。
+修正 embeddings.py 的导入位置。
+
+现在写文档提取与分块入库服务（PyMuPDF 提取、按段落分块并保留页码）。
+
+现在写检索服务（关键词 / 向量 / 混合三种模式，混合走已验证的单 SQL）。
+
+清理检索 SQL 构建逻辑（避免重复拼接）。
+
+现在写 Pydantic schemas 与实验记录服务。
+
+现在写实验记录服务（CRUD、全文检索、对比、聚合查询）。
+
+实验服务完成。现在需要确认 Handoff 请求体的精确结构，再写 PowerContext 客户端。
+
+PowerContext API 契约已完整确认。修正 citation 类型后编写 PowerContext 客户端服务。
+
+现在写研究记忆引擎服务（6 类记忆、保存进度 Handoff、跨会话恢复）。
+
+现在写项目管理服务（seekdb 项目表 + PowerContext Scope 绑定）。
+
+现在写 AI 科研助手服务（问题路由、证据聚合、引用与可解释性面板）。
+
+把 embedding 服务改为构造注入，去掉模块级全局。
+
+现在写自动科研周报服务（基于真实记录聚合，LLM 仅做叙述性概述）。
+
+现在写 API 路由层与应用入口。
+
+创建包初始化文件，然后在 WSL 中安装依赖并启动后端做首轮联调。
+
+后端依赖在 WSL 后台安装中。同时开始搭建前端（Vite + React + TS + Tailwind，深色优先的科研工作台 UI）。
+
+后端依赖仍在后台安装。继续写前端 UI 组件层。
+
+后端依赖安装完成。先验证导入，然后启动 PowerContext Server 与 LabTrace 后端做首轮联调。
+
+网络超时导致 pymupdf 下载失败。改用清华镜像重装依赖。
+
+依赖在后台重装。继续写前端布局与应用状态层。
+
+依赖安装完成。验证导入并启动服务。
+
+后端导入通过。现在把启动脚本写入仓库（便于评审复现），然后在 WSL 中启动两个服务。
+
+$HOME 在跨 shell 传递时未展开。改用占位符并让启动脚本自己替换。
+
+端口 8000 已被一个 PowerContext 实例占用（新实例绑定失败）。检查现有进程与其后端存储。
+
+PowerContext Server 健康（database ready），但需确认它使用的数据目录。查找监听 8000 的进程。
+
+端口 8000 被一个来源不明的 PowerContext 实例占用（ps/ss 在该 WSL 中不可用）。我改用受控端口 8010 启动 LabTrace 专用实例，先通过 /proc 确认占用进程。
+
+Git Bash 会吞掉传给 WSL 的 $ 变量，改为用脚本文件方式执行。写一个开发环境一键启动脚本（也是交付物之一）。
+
+两个服务均已就绪：PowerContext（8010，seekdb 存储）+ LabTrace 后端（8100，seekdb 已连接）。现在创建演示样例数据（原创、明确标注为示例）。
+
+现在编写端到端演示脚本（覆盖演示 A–D），并在 WSL 中运行验证。
+
+端到端跑通但有 4 处真实失败需要修复。先看后端日志错误，并测试 seekdb 是否支持中文分词解析器。
+
+Reading the PowerContext server log to get the traceback behind the HTTP 500s.
+
+Found it — an aiomysql driver bug inside PowerContext's seekdb backend. Let me inspect the exact code.
+
+Root cause confirmed: PyMySQL 1.2.3 removed escape_bytes_prefixed (now a sentinel string) while aiomysql 0.3.2 still calls it — so any bytes parameter in PowerContext's seekdb backend crashes. Pinning PyMySQL < 1.2 in the tool venv.
+
+space/beng can't tokenize Chinese at all; both ngram and ik match 6/6. Now checking which handles mixed Chinese/English and precision better.
+
+ik is the better parser (correct Chinese word segmentation, precise English, handles A*); ngram over-matches English. Making the parser configurable with ik default. Let me read the current schema and chunker.
+
+Hybrid currently ANDs the two legs, so a zero-hit FTS leg kills recall. Rewriting it as proper two-leg retrieval with reciprocal-rank fusion.
+
+The backend on 8100 is a stale process from before my code changes — killing it and restarting so the new retrieval/chunking code is actually loaded.
+
+Backend is up, but I spotted a flaw in my index-rebuild logic: on a database created before lt_meta existed it keeps the old space indexes. Fixing.
+
+Indexes were still built with the old space parser because a previous run already recorded IK in lt_meta. Clearing that row to force a genuine rebuild.
+
+The script picked up default settings because .env lives in qoder/, not qoder/backend/. Re-running with the env sourced.
+
+Indexes rebuilt with ik. Restarting the backend and re-running the end-to-end demo.
+
+Parameter-order bug in my rewritten keyword leg — the MATCH placeholder in the SELECT list comes first. Fixing.
+
+Retrieval and the full PowerContext memory/handoff path now pass. Two routing bugs remain in the assistant. Let me read it.
+
+Let me verify whether PowerContext's own memory search matches Chinese, since that determines whether my fallback is a workaround or the right design.
+
+PowerContext's zero-hit result for "下一步" is correct behaviour (no memory text contains those words), so the list_memories fallback is the right fix. Restarting and re-running.
+
+A stop/start race left the port in a bad state. Making dev-down.sh wait until the process is actually gone.
+
+All E2E checks pass now. Let me record progress and lint the backend before moving to the frontend.
+
+Backend is clean and healthy. Now the frontend — surveying what's already there.
+
+The backend lacks the "write experiment conclusions to PowerContext" capability required by feature 2. Let me check the memory service signature and add it.
+
+Cleaning up the accumulated demo projects (all created by my own E2E runs) and testing the new endpoint.
+
+Backend is solid. Now building the frontend. First, adding the new endpoint to the API client.
+
+Now I'll write the seven page components. Starting with Overview.
+
+Frontend builds clean. Now let me verify it against the live backend.
+
+Found a real bug — the memory-kind dropdown was empty on remount. Fixing it.
+
+Demo scope cleaned to 13 real memories. Moving to Phase 5.
+
+Now writing the pytest suite — unit tests plus a gated live end-to-end test that exercises real seekdb and PowerContext.
+
+The chat citations don't currently expose which retrieval leg confirmed a hit — that matters for the off-topic honesty check, so I'll surface it.
+
+Unit suite is green (111 passed). Restarting the backend to pick up the retrieval/assistant changes, then running the live end-to-end suite against real seekdb and PowerContext.
+
+Found a real bug: the create/update experiment endpoints drop model_config. Let me confirm the scope of it and probe the other two findings.
+
+PreparedContext is empty because PowerContext's extract capability isn't configured — that's a documented-normal result, but the UI must say so rather than show a blank panel.
+
+已压缩上下文
+Docker daemon is available, so I'll write the Compose stack and actually build it. Starting with .gitignore and the Docker files.
+
+Qoder 的回复已被你终止。
+已编辑 92 个文件
++10,364
+-0
++49
+-0
++35
+-0
++56
+-0
+2026-10-27 23:10
+由 AI 生成

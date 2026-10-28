@@ -1,0 +1,68 @@
+{
+  "npcs": {
+    "baker": {
+      "id": "baker",
+      "name": "老张",
+      "full_name": "面包店老板老张",
+      "location": "bakery",
+      "location_name": "面包店",
+      "greeting": "欢迎光临记仇镇唯一一家面包店！新鲜出炉的黑麦面包，只要 10 金币。",
+      "personality_tags": ["贪财", "小气", "爱八卦"],
+      "likes": ["金币", "诚实的客人"],
+      "dislikes": ["欺骗", "偷窃", "赊账"],
+      "special": "特别容易向守卫传播坏消息（baker -> guard 传播概率 0.85）",
+      "opening_hint": "他会热情招呼客人，但一旦发现被欺骗会立刻翻脸记仇。"
+    },
+    "guard": {
+      "id": "guard",
+      "name": "阿铁",
+      "full_name": "小镇守卫阿铁",
+      "location": "gate",
+      "location_name": "城门",
+      "greeting": "站住！报上名来。城门重地，本守卫阿铁在此执勤。",
+      "personality_tags": ["正义感强", "认真", "容易相信传闻"],
+      "likes": ["守法公民", "乐于助人"],
+      "dislikes": ["骗子", "盗窃行为"],
+      "special": "优先调查镇上可疑事件；必须区分亲眼所见、他人转述与未证实传闻",
+      "opening_hint": "他会主动盘查可疑之人，并引用从其他镇民处听来的传闻。"
+    },
+    "witch": {
+      "id": "witch",
+      "name": "莉莉丝",
+      "full_name": "神秘女巫莉莉丝",
+      "location": "witch_hut",
+      "location_name": "魔法屋",
+      "greeting": "呵呵……稀客。魔法屋的茶不好喝，但秘密很香。想聊点什么？",
+      "personality_tags": ["腹黑", "聪明", "喜欢恶作剧"],
+      "likes": ["奇怪的故事", "秘密", "冒险"],
+      "dislikes": ["无聊", "反复欺骗"],
+      "special": "可以提供特殊任务，帮助玩家改变名声（信任度足够时）",
+      "opening_hint": "她喜欢用秘密和玩家谈条件，掌握小镇的不少传闻。"
+    }
+  },
+  "locations": {
+    "bakery": {"name": "面包店", "npc": "baker"},
+    "gate": {"name": "城门", "npc": "guard"},
+    "witch_hut": {"name": "魔法屋", "npc": "witch"},
+    "square": {"name": "小镇广场", "npc": null}
+  },
+  "social_graph": {
+    "comment": "有向传播关系：from 会在遇到 gossip 机会时以 probability 的概率把传闻传给 to。",
+    "edges": [
+      {"from": "baker", "to": "guard", "probability": 0.85},
+      {"from": "guard", "to": "witch", "probability": 0.6},
+      {"from": "witch", "to": "guard", "probability": 0.5},
+      {"from": "baker", "to": "witch", "probability": 0.3}
+    ]
+  },
+  "exaggeration": {
+    "comment": "按传播跳数选择措辞模板；{origin} 为传播者名字，{content} 为上一版传闻内容。原始事件描述永不被覆盖。",
+    "levels": [
+      "{origin}告诉我：{content}",
+      "听说{origin}提起过，{content}，这事在镇上传得可有鼻子有眼了",
+      "镇上都在议论，{content}，据说还牵扯到王室的秘密，可不得了啦"
+    ],
+    "confidence_decay": 0.8,
+    "max_spread_count": 4
+  }
+}

@@ -1,0 +1,57 @@
+# Optional override: run LabTrace against a standalone OceanBase seekdb *server* container
+# instead of the embedded runtime that the default docker-compose.yml uses.
+#
+#   docker compose -f docker-compose.yml -f docker/docker-compose.seekdb-server.yml up -d --build
+#
+# What this changes:
+#   * adds a `seekdb` service from the official oceanbase/seekdb image;
+#   * mounts qoder/db as /init-scripts, so on first start the container creates the `labtrace`
+#     database and applies db/schema.sql (tables + HNSW vector index + both FULLTEXT indexes);
+#   * switches the LabTrace backend to SEEKDB_MODE=remote.
+#
+# PowerContext keeps its own embedded seekdb storage: DATABASE_KIND=seekdb is embedded-only
+# (POWERCONTEXT_SERVER_DATABASE_PATH), and pointing PowerContext at a remote server means
+# DATABASE_KIND=oceanbase plus a SQLAlchemy URL, which LabTrace does not configure by default.
+#
+# The seekdb server wants several GB of RAM; tune MEMORY_LIMIT / DATAFILE_SIZE / LOG_DISK_SIZE
+# for your machine.
+services:
+  seekdb:
+    image: ${SEEKDB_IMAGE:-oceanbase/seekdb:latest}
+    container_name: labtrace-seekdb
+    environment:
+      SEEKDB_DATABASE: ${SEEKDB_DATABASE:-labtrace}
+      ROOT_PASSWORD: ${SEEKDB_ROOT_PASSWORD:-labtrace}
+      INIT_SCRIPTS_PATH: /init-scripts
+      MEMORY_LIMIT: ${SEEKDB_MEMORY_LIMIT:-4G}
+      DATAFILE_SIZE: ${SEEKDB_DATAFILE_SIZE:-2G}
+      DATAFILE_MAXSIZE: ${SEEKDB_DATAFILE_MAXSIZE:-8G}
+      LOG_DISK_SIZE: ${SEEKDB_LOG_DISK_SIZE:-4G}
+    volumes:
+      - ./db:/init-scripts:ro
+      - seekdb-server-data:/var/lib/seekdb
+    ports:
+      - "127.0.0.1:${SEEKDB_SERVER_PORT:-2881}:2881"
+    healthcheck:
+      # The image ships the mysql client; root's password comes from ROOT_PASSWORD.
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$ROOT_PASSWORD\" mysql -h127.0.0.1 -P2881 -uroot -e 'SELECT 1' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 90
+      start_period: 120s
+    restart: unless-stopped
+
+  backend:
+    depends_on:
+      seekdb:
+        condition: service_healthy
+    environment:
+      SEEKDB_MODE: remote
+      SEEKDB_HOST: seekdb
+      SEEKDB_PORT: "2881"
+      SEEKDB_USER: root
+      SEEKDB_PASSWORD: ${SEEKDB_ROOT_PASSWORD:-labtrace}
+      SEEKDB_DATABASE: ${SEEKDB_DATABASE:-labtrace}
+
+volumes:
+  seekdb-server-data:

@@ -1,0 +1,87 @@
+[
+  {
+    "name": "No-Memory Baseline (EQA-Long)",
+    "objective": "建立无记忆 baseline，确认长时序 EQA 的起点性能",
+    "hypothesis": "仅使用当前帧的智能体在依赖历史观察的问题上准确率会显著低于 50%",
+    "method": "每步只输入当前 RGB 帧，历史观察直接丢弃；使用 7B 指令模型生成答案，温度 0.0",
+    "model_config": {
+      "detector": "none",
+      "memory": "none",
+      "llm": "7b-instruct",
+      "temperature": 0.0,
+      "frames_per_step": 1
+    },
+    "dataset": "EQA-Long (sample)",
+    "result_summary": "准确率 41.2%，历史依赖型问题子集准确率仅 22.6%，确认无记忆无法完成长时序问答",
+    "metrics": { "accuracy": 41.2, "history_dependent_accuracy": 22.6, "peak_memory_gb": 3.1, "latency_ms": 210 },
+    "issues": "计数类问题几乎全部失败；智能体反复回答当前房间可见物体",
+    "failure_reason": null,
+    "next_steps": "实现符号化物体摘要记忆，先验证能否提升历史依赖型问题准确率",
+    "status": "completed"
+  },
+  {
+    "name": "Frame-Buffer 64 帧稠密记忆",
+    "objective": "验证稠密特征缓存能带来多少提升，作为记忆机制对照",
+    "hypothesis": "缓存最近 64 帧特征可以把准确率提升到 50% 以上，但显存会线性增长",
+    "method": "缓存最近 64 帧 CLIP 特征，问答时对全帧做交叉注意力检索",
+    "model_config": {
+      "detector": "none",
+      "memory": "frame_buffer",
+      "buffer_frames": 64,
+      "llm": "7b-instruct",
+      "temperature": 0.0
+    },
+    "dataset": "EQA-Long (sample)",
+    "result_summary": "准确率 52.4%，显存峰值 11.8 GB，单问延迟 480 ms，超出预期开销",
+    "metrics": { "accuracy": 52.4, "history_dependent_accuracy": 39.8, "peak_memory_gb": 11.8, "latency_ms": 480 },
+    "issues": "5 房间序列跑到第 4 个房间时显存接近上限；延迟过高难以交互式使用",
+    "failure_reason": null,
+    "next_steps": "改用符号化摘要记忆，把内存与帧数解耦",
+    "status": "completed"
+  },
+  {
+    "name": "HSM v1：物体摘要 + IoU 合并",
+    "objective": "实现分层场景记忆第一版，验证符号记忆的收益",
+    "hypothesis": "符号化物体摘要能在 4 GB 显存内把准确率提升到 55% 以上",
+    "method": "YOLO-World 检测 + SAM 分割生成物体摘要三元组，同类物体按 IoU>0.5 合并；问答时 top-8 检索",
+    "model_config": {
+      "detector": "YOLO-World",
+      "detector_conf_threshold": 0.35,
+      "segmenter": "SAM",
+      "memory": "hsm_symbolic_v1",
+      "merge_iou_threshold": 0.5,
+      "top_k": 8,
+      "llm": "7b-instruct",
+      "temperature": 0.0
+    },
+    "dataset": "EQA-Long (sample)",
+    "result_summary": "准确率 58.7%，显存 4.2 GB，延迟 265 ms，达成假设目标",
+    "metrics": { "accuracy": 58.7, "history_dependent_accuracy": 54.1, "peak_memory_gb": 4.2, "latency_ms": 265 },
+    "issues": "相邻房间同类物体被错误合并，计数类问题错误占全部错误的 23%",
+    "failure_reason": null,
+    "next_steps": "加入房间 ID 约束的合并策略，并引入外观嵌入做重识别",
+    "status": "completed"
+  },
+  {
+    "name": "HSM v2 尝试：全局外观嵌入重识别",
+    "objective": "用外观嵌入替代纯 IoU 合并，解决错误合并导致的计数错误",
+    "hypothesis": "外观嵌入重识别可以把计数类问题错误率降低一半以上",
+    "method": "为每个物体摘要额外存储 512 维外观嵌入，合并时同时要求 IoU>0.5 且余弦相似度>0.85",
+    "model_config": {
+      "detector": "YOLO-World",
+      "segmenter": "SAM",
+      "memory": "hsm_symbolic_v2",
+      "appearance_embedding_dim": 512,
+      "merge_iou_threshold": 0.5,
+      "merge_cosine_threshold": 0.85,
+      "llm": "7b-instruct"
+    },
+    "dataset": "EQA-Long (sample)",
+    "result_summary": "准确率下降到 53.9%，计数错误未减少；同类物体外观嵌入区分度不足，反而把同一物体拆成多条",
+    "metrics": { "accuracy": 53.9, "history_dependent_accuracy": 48.3, "peak_memory_gb": 5.6, "latency_ms": 340, "count_error_rate": 0.31 },
+    "issues": "同一物体在不同视角下余弦相似度常低于 0.85，导致重复条目；记忆条目数量增加 2.4 倍",
+    "failure_reason": "外观嵌入对视角变化过于敏感，阈值 0.85 过严；该方案在当前检测器输出质量下不可行，已放弃",
+    "next_steps": "放弃全局外观嵌入方案，改为在合并时加入房间 ID 硬约束 + 多视角平均嵌入",
+    "status": "abandoned"
+  }
+]

@@ -1,0 +1,49 @@
+# PowerContext Server 1.2.0 backed by embedded OceanBase seekdb.
+#
+# Build context is the qoder/ directory:
+#   docker build -f docker/Dockerfile.powercontext -t labtrace-powercontext .
+#
+# BASE_IMAGE can be pointed at a registry mirror when docker.io is unreachable, e.g.
+#   --build-arg BASE_IMAGE=docker.m.daocloud.io/library/python:3.12-slim
+ARG BASE_IMAGE=python:3.12-slim
+
+FROM ${BASE_IMAGE}
+
+ARG PIP_INDEX_URL=https://pypi.org/simple
+ENV PIP_INDEX_URL=${PIP_INDEX_URL} \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH=/home/powercontext/.local/bin:${PATH}
+
+WORKDIR /app
+
+RUN useradd --create-home --uid 10002 powercontext \
+    && mkdir -p /data \
+    && chown -R powercontext:powercontext /data
+USER powercontext
+
+# pymysql must stay below 1.2: aiomysql 0.3.2 (used by PowerContext's seekdb driver) still calls
+# pymysql.converters.escape_bytes_prefixed, which pymysql 1.2 replaced with a sentinel string,
+# breaking every bytes parameter. Verified against PowerContext 1.2.0 + seekdb 1.4.0.
+RUN pip install --user "powercontext[cli,server,seekdb]==1.2.0" "pymysql<1.2"
+
+ENV POWERCONTEXT_SERVER_HTTP_HOST=0.0.0.0 \
+    POWERCONTEXT_SERVER_HTTP_PORT=8000 \
+    POWERCONTEXT_SERVER_DATABASE_KIND=seekdb \
+    POWERCONTEXT_SERVER_DATABASE_PATH=/data/powercontext-seekdb \
+    POWERCONTEXT_SERVER_MCP_ENABLED=true \
+    POWERCONTEXT_SERVER_LOGGING_LEVEL=INFO
+
+# A container must bind 0.0.0.0, and PowerContext refuses to bind a non-loopback address while
+# authentication is disabled. Supply POWERCONTEXT_SERVER_ACCESS_MODE=enforced plus
+# POWERCONTEXT_SERVER_AUTH_TOKEN at runtime (docker-compose.yml does); the image deliberately
+# ships no default credentials.
+
+VOLUME ["/data"]
+EXPOSE 8000
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=18 \
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=4).status==200 else 1)"
+
+# --no-env-file keeps configuration deterministic: everything comes from the container env.
+CMD ["powercontext", "server", "run", "--no-env-file"]

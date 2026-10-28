@@ -1,0 +1,47 @@
+{
+  "checked_at_utc": "2026-10-28T08:07:58.986892+00:00",
+  "fault": "Docker Desktop could not remove a stale dockerInference socket",
+  "recovery": "Stopped Desktop; preserved runtime socket directories by renaming; created empty runtime directories; started Desktop. No images, containers, volumes or databases were removed.",
+  "runtime_backups": [
+    "Docker/run.stale-20261028-160125",
+    "docker-secrets-engine.stale-20261028-160125",
+    "docker-secrets-engine.stale-20261028-160239"
+  ],
+  "health": {
+    "status": "ok",
+    "seekdb": {
+      "connected": true,
+      "mode": "remote",
+      "version": "5.7.25-OceanBase seekdb-v1.4.0.0"
+    },
+    "powercontext": {
+      "url": "http://powercontext:8000",
+      "reachable": true,
+      "ready": true
+    },
+    "llm": {
+      "configured": false,
+      "model": null,
+      "base_url": null
+    },
+    "embedding": {
+      "provider": "local-hash-fallback",
+      "dimension": 384
+    }
+  },
+  "preserved_project": {
+    "project_id": "prj_132c46262c604e98",
+    "document_count": 3,
+    "experiment_count": 4
+  },
+  "memory_counts": {
+    "entries": 8
+  },
+  "containers": [
+    "labtrace-frontend|408512bd89fc|Up 4 minutes (healthy)",
+    "labtrace-backend|9b1c06503ac5|Up 4 minutes (healthy)",
+    "labtrace-seekdb|8e1a44c41e07|Up 4 minutes (healthy)",
+    "labtrace-powercontext|c029f8446fd7|Up 4 minutes (healthy)"
+  ],
+  "reference": "https://github.com/docker/desktop-feedback/issues/554"
+}

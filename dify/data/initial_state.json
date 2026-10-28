@@ -1,0 +1,14 @@
+{
+  "player_id": "player_demo",
+  "day": 1,
+  "turn": 0,
+  "coins": 100,
+  "reputation": 50,
+  "location": "square",
+  "inventory": [],
+  "relationships": {
+    "baker": {"affection": 50, "trust": 50},
+    "guard": {"affection": 50, "trust": 60},
+    "witch": {"affection": 50, "trust": 40}
+  }
+}

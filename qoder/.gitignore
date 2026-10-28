@@ -1,0 +1,38 @@
+# --- Python ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# --- Node / frontend ------------------------------------------------------
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+npm-debug.log*
+
+# --- Secrets and local configuration --------------------------------------
+# Real credentials must never be committed; only the *.example templates are tracked.
+.env
+.env.*
+!.env.example
+*.local.env
+docker/*.env
+!docker/*.env.example
+scripts/powercontext.env
+submission.local.json
+
+# --- Local runtime data (embedded seekdb files, logs, uploads) -------------
+data/
+*.log
+*.pid
+
+# --- OS / editor ----------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
