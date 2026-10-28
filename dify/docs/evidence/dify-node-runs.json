@@ -1,0 +1,546 @@
+{
+  "workflow_id": "dfab256a-55f4-4ee5-b370-595771e4c342",
+  "runs": [
+    {
+      "id": "754cab7f-e5b0-4b9e-b172-d8087c4cf78c",
+      "status": "succeeded",
+      "elapsed_time": 0.32162990600045305,
+      "total_tokens": 0,
+      "created_at": "2026-10-27T14:19:34.150787"
+    },
+    {
+      "id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "status": "succeeded",
+      "elapsed_time": 8.39542409600108,
+      "total_tokens": 836,
+      "created_at": "2026-10-27T14:19:34.53901"
+    },
+    {
+      "id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "status": "succeeded",
+      "elapsed_time": 6.453521835001084,
+      "total_tokens": 1774,
+      "created_at": "2026-10-27T14:19:42.999325"
+    },
+    {
+      "id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "status": "succeeded",
+      "elapsed_time": 4.723142098000608,
+      "total_tokens": 1017,
+      "created_at": "2026-10-27T14:19:50.359421"
+    },
+    {
+      "id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "status": "succeeded",
+      "elapsed_time": 6.540253544999359,
+      "total_tokens": 1083,
+      "created_at": "2026-10-27T14:19:55.14648"
+    }
+  ],
+  "nodes": [
+    {
+      "workflow_run_id": "754cab7f-e5b0-4b9e-b172-d8087c4cf78c",
+      "node_id": "start",
+      "title": "开始",
+      "node_type": "start",
+      "status": "succeeded",
+      "elapsed_time": 0.000109
+    },
+    {
+      "workflow_run_id": "754cab7f-e5b0-4b9e-b172-d8087c4cf78c",
+      "node_id": "code_parse",
+      "title": "命令解析",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.04573
+    },
+    {
+      "workflow_run_id": "754cab7f-e5b0-4b9e-b172-d8087c4cf78c",
+      "node_id": "if_command",
+      "title": "是命令吗？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.000207
+    },
+    {
+      "workflow_run_id": "754cab7f-e5b0-4b9e-b172-d8087c4cf78c",
+      "node_id": "var_intent",
+      "title": "意图聚合",
+      "node_type": "variable-aggregator",
+      "status": "succeeded",
+      "elapsed_time": 6.4e-05
+    },
+    {
+      "workflow_run_id": "754cab7f-e5b0-4b9e-b172-d8087c4cf78c",
+      "node_id": "code_payload",
+      "title": "构造请求",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.05693
+    },
+    {
+      "workflow_run_id": "754cab7f-e5b0-4b9e-b172-d8087c4cf78c",
+      "node_id": "http_turn",
+      "title": "游戏回合接口",
+      "node_type": "http-request",
+      "status": "succeeded",
+      "elapsed_time": 0.039784
+    },
+    {
+      "workflow_run_id": "754cab7f-e5b0-4b9e-b172-d8087c4cf78c",
+      "node_id": "code_extract",
+      "title": "响应解析",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.054669
+    },
+    {
+      "workflow_run_id": "754cab7f-e5b0-4b9e-b172-d8087c4cf78c",
+      "node_id": "if_reply",
+      "title": "直接回复还是NPC对白？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.000143
+    },
+    {
+      "workflow_run_id": "754cab7f-e5b0-4b9e-b172-d8087c4cf78c",
+      "node_id": "answer_direct",
+      "title": "直接回复",
+      "node_type": "answer",
+      "status": "succeeded",
+      "elapsed_time": 0.000102
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "start",
+      "title": "开始",
+      "node_type": "start",
+      "status": "succeeded",
+      "elapsed_time": 0.000116
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "code_parse",
+      "title": "命令解析",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.063995
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "if_command",
+      "title": "是命令吗？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.000114
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "var_intent",
+      "title": "意图聚合",
+      "node_type": "variable-aggregator",
+      "status": "succeeded",
+      "elapsed_time": 7.4e-05
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "code_payload",
+      "title": "构造请求",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.061877
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "http_turn",
+      "title": "游戏回合接口",
+      "node_type": "http-request",
+      "status": "succeeded",
+      "elapsed_time": 4.983215
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "code_extract",
+      "title": "响应解析",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.057345
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "if_reply",
+      "title": "直接回复还是NPC对白？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.000121
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "if_npc",
+      "title": "哪个NPC？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.00014
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "llm_baker",
+      "title": "老张·面包店老板",
+      "node_type": "llm",
+      "status": "succeeded",
+      "elapsed_time": 2.999632
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "var_npc",
+      "title": "台词聚合",
+      "node_type": "variable-aggregator",
+      "status": "succeeded",
+      "elapsed_time": 6.1e-05
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "code_reply",
+      "title": "NPC 回复整理",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.05242
+    },
+    {
+      "workflow_run_id": "31d714e5-96f6-4ea1-bf56-5f40a471e00c",
+      "node_id": "answer_npc",
+      "title": "NPC对白回复",
+      "node_type": "answer",
+      "status": "succeeded",
+      "elapsed_time": 0.000142
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "start",
+      "title": "开始",
+      "node_type": "start",
+      "status": "succeeded",
+      "elapsed_time": 8.9e-05
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "code_parse",
+      "title": "命令解析",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.045237
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "if_command",
+      "title": "是命令吗？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.0001
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "llm_intent",
+      "title": "意图解析 LLM",
+      "node_type": "llm",
+      "status": "succeeded",
+      "elapsed_time": 1.143658
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "code_intent",
+      "title": "意图校验",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.063707
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "var_intent",
+      "title": "意图聚合",
+      "node_type": "variable-aggregator",
+      "status": "succeeded",
+      "elapsed_time": 7.7e-05
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "code_payload",
+      "title": "构造请求",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.053876
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "http_turn",
+      "title": "游戏回合接口",
+      "node_type": "http-request",
+      "status": "succeeded",
+      "elapsed_time": 2.158733
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "code_extract",
+      "title": "响应解析",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.066955
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "if_reply",
+      "title": "直接回复还是NPC对白？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.000176
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "if_npc",
+      "title": "哪个NPC？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.000145
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "llm_baker",
+      "title": "老张·面包店老板",
+      "node_type": "llm",
+      "status": "succeeded",
+      "elapsed_time": 3.521206
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "var_npc",
+      "title": "台词聚合",
+      "node_type": "variable-aggregator",
+      "status": "succeeded",
+      "elapsed_time": 4.7e-05
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "code_reply",
+      "title": "NPC 回复整理",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.042803
+    },
+    {
+      "workflow_run_id": "9a4ae25b-0363-4ddb-9e7b-22a00da93153",
+      "node_id": "answer_npc",
+      "title": "NPC对白回复",
+      "node_type": "answer",
+      "status": "succeeded",
+      "elapsed_time": 0.000113
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "start",
+      "title": "开始",
+      "node_type": "start",
+      "status": "succeeded",
+      "elapsed_time": 9.1e-05
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "code_parse",
+      "title": "命令解析",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.044754
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "if_command",
+      "title": "是命令吗？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.000113
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "var_intent",
+      "title": "意图聚合",
+      "node_type": "variable-aggregator",
+      "status": "succeeded",
+      "elapsed_time": 6.9e-05
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "code_payload",
+      "title": "构造请求",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.050598
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "http_turn",
+      "title": "游戏回合接口",
+      "node_type": "http-request",
+      "status": "succeeded",
+      "elapsed_time": 2.520714
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "code_extract",
+      "title": "响应解析",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.061087
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "if_reply",
+      "title": "直接回复还是NPC对白？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.000114
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "if_npc",
+      "title": "哪个NPC？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.000135
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "llm_guard",
+      "title": "阿铁·小镇守卫",
+      "node_type": "llm",
+      "status": "succeeded",
+      "elapsed_time": 1.850507
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "var_npc",
+      "title": "台词聚合",
+      "node_type": "variable-aggregator",
+      "status": "succeeded",
+      "elapsed_time": 5.2e-05
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "code_reply",
+      "title": "NPC 回复整理",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.053912
+    },
+    {
+      "workflow_run_id": "a7f272d5-040e-4a13-928f-40996f789308",
+      "node_id": "answer_npc",
+      "title": "NPC对白回复",
+      "node_type": "answer",
+      "status": "succeeded",
+      "elapsed_time": 9.8e-05
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "start",
+      "title": "开始",
+      "node_type": "start",
+      "status": "succeeded",
+      "elapsed_time": 9.5e-05
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "code_parse",
+      "title": "命令解析",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.053573
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "if_command",
+      "title": "是命令吗？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.000121
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "var_intent",
+      "title": "意图聚合",
+      "node_type": "variable-aggregator",
+      "status": "succeeded",
+      "elapsed_time": 8.4e-05
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "code_payload",
+      "title": "构造请求",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.061019
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "http_turn",
+      "title": "游戏回合接口",
+      "node_type": "http-request",
+      "status": "succeeded",
+      "elapsed_time": 3.026162
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "code_extract",
+      "title": "响应解析",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.076508
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "if_reply",
+      "title": "直接回复还是NPC对白？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.00022
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "if_npc",
+      "title": "哪个NPC？",
+      "node_type": "if-else",
+      "status": "succeeded",
+      "elapsed_time": 0.000166
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "llm_witch",
+      "title": "莉莉丝·神秘女巫",
+      "node_type": "llm",
+      "status": "succeeded",
+      "elapsed_time": 3.092225
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "var_npc",
+      "title": "台词聚合",
+      "node_type": "variable-aggregator",
+      "status": "succeeded",
+      "elapsed_time": 7e-05
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "code_reply",
+      "title": "NPC 回复整理",
+      "node_type": "code",
+      "status": "succeeded",
+      "elapsed_time": 0.058408
+    },
+    {
+      "workflow_run_id": "c74f99c9-8401-44ad-90c7-faf1c3c8ec23",
+      "node_id": "answer_npc",
+      "title": "NPC对白回复",
+      "node_type": "answer",
+      "status": "succeeded",
+      "elapsed_time": 0.000111
+    }
+  ]
+}

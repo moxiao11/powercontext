@@ -1,0 +1,37 @@
+{
+  "comment": "可复现测试场景：直接把玩家状态预置为触发条件，用于验证结局计算（tests/test_game_engine.py Test 7 与 scripts/reset_demo.py）。fields 会覆盖默认初始状态。",
+  "scenarios": {
+    "hero": {
+      "description": "声望 82 且完成帮助任务 -> 触发小镇英雄结局",
+      "state": {"coins": 60, "reputation": 82, "quests": {"help_task": "completed"}},
+      "expected_ending": "hero"
+    },
+    "exile": {
+      "description": "声望 8 -> 立即触发全民公敌结局",
+      "state": {"coins": 30, "reputation": 8},
+      "expected_ending": "exile"
+    },
+    "manipulator": {
+      "description": "女巫信任 72 且完成女巫委托 -> 触发神秘操纵者结局",
+      "state": {"coins": 40, "reputation": 55, "relationships": {"witch": {"affection": 70, "trust": 72}}, "quests": {"witch_favor": "completed"}},
+      "expected_ending": "manipulator"
+    },
+    "wanderer": {
+      "description": "第 10 回合声望中等 -> 无名过客结局",
+      "state": {"coins": 50, "reputation": 45, "turn": 10},
+      "expected_ending": "wanderer"
+    },
+    "grudge": {
+      "description": "玩家偷过面包且未赔偿 -> 老张记仇（信任/好感显著下降，事件未 resolved）",
+      "state": {"location": "bakery"},
+      "events": [
+        {
+          "day": 1, "turn": 1, "actor": "player", "target": "baker",
+          "action": "steal", "description": "玩家偷走了老张的一个黑麦面包",
+          "witnesses": ["baker"], "truth_status": "verified", "importance": 9, "resolved": false
+        }
+      ],
+      "expected": {"baker_trust_below": 30}
+    }
+  }
+}

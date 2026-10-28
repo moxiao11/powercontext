@@ -1,0 +1,130 @@
+{
+  "comment": "规则引擎行为表。所有数值由规则确定，LLM 不得自行决定状态变化。requires_target_location=true 表示目标 NPC 必须与玩家当前地点一致。memory_worthy 的事件按重要度阈值写入 PowerContext。",
+  "actions": {
+    "chat": {
+      "label": "闲聊",
+      "target": "optional",
+      "requires_target_location": false,
+      "importance": 2,
+      "memory_worthy": false,
+      "effects": {},
+      "witness_gossip_chance": 0.0
+    },
+    "lie_identity": {
+      "label": "谎报身份",
+      "target": "required",
+      "requires_target_location": true,
+      "importance": 8,
+      "memory_worthy": true,
+      "effects": {"reputation": -5, "target_affection": -5, "target_trust": -10},
+      "witness_gossip_chance": 0.9,
+      "guaranteed_first_hop": true
+    },
+    "steal": {
+      "label": "偷窃",
+      "target": "required",
+      "requires_target_location": true,
+      "importance": 9,
+      "memory_worthy": true,
+      "effects": {"reputation": -15, "target_affection": -20, "target_trust": -25},
+      "witness_gossip_chance": 0.85,
+      "guaranteed_first_hop": true,
+      "loot": {"item": "面包", "value": 5}
+    },
+    "buy": {
+      "label": "购买面包",
+      "target": "required",
+      "requires_target_location": true,
+      "importance": 3,
+      "memory_worthy": false,
+      "cost_coins": 10,
+      "effects": {"target_affection": 2, "target_trust": 3},
+      "witness_gossip_chance": 0.0,
+      "gain_item": "面包"
+    },
+    "give_gift": {
+      "label": "赠送礼物",
+      "target": "required",
+      "requires_target_location": true,
+      "importance": 6,
+      "memory_worthy": true,
+      "cost_coins": "amount",
+      "min_amount": 5,
+      "effects": {"target_affection": "+amount/2_max20", "target_trust": "+amount/4_max10"},
+      "witness_gossip_chance": 0.3
+    },
+    "help": {
+      "label": "帮助 NPC",
+      "target": "required",
+      "requires_target_location": true,
+      "importance": 7,
+      "memory_worthy": true,
+      "effects": {"reputation": 5, "target_affection": 10, "target_trust": 10},
+      "witness_gossip_chance": 0.5,
+      "completes_quest": "help_task"
+    },
+    "apologize": {
+      "label": "道歉",
+      "target": "required",
+      "requires_target_location": true,
+      "importance": 6,
+      "memory_worthy": true,
+      "effects": {"target_affection": 5, "target_trust": 8, "reputation": 2},
+      "requires_unresolved_bad_event": true,
+      "unresolved_absent_scale": 0.25,
+      "witness_gossip_chance": 0.2
+    },
+    "compensate": {
+      "label": "赔偿",
+      "target": "required",
+      "requires_target_location": true,
+      "importance": 7,
+      "memory_worthy": true,
+      "cost_coins": "amount",
+      "default_amount": 10,
+      "min_amount": 5,
+      "effects": {"target_affection": 10, "target_trust": 15, "reputation": 3},
+      "requires_unresolved_bad_event": true,
+      "unresolved_absent_scale": 0.25,
+      "resolves_event": true,
+      "triggers_clarification_rumor": {"to": "guard", "probability": 0.7}
+    },
+    "threaten": {
+      "label": "威胁",
+      "target": "required",
+      "requires_target_location": true,
+      "importance": 7,
+      "memory_worthy": true,
+      "effects": {"reputation": -10, "target_affection": -15, "target_trust": -20},
+      "witness_gossip_chance": 0.75,
+      "guaranteed_first_hop": true
+    },
+    "spread_rumor": {
+      "label": "传播谣言",
+      "target": "required",
+      "requires_target_location": true,
+      "importance": 5,
+      "memory_worthy": true,
+      "effects": {"reputation": -3, "target_affection": 3},
+      "witness_gossip_chance": 0.0,
+      "creates_player_rumor": {"confidence": 0.6}
+    }
+  },
+  "bad_action_types": ["lie_identity", "steal", "threaten"],
+  "clamps": {
+    "affection": [0, 100],
+    "trust": [0, 100],
+    "reputation": [0, 100],
+    "coins_min": 0
+  },
+  "endings": {
+    "hero": {"title": "🏘️ 小镇英雄", "condition": "reputation >= 80 and quest help_task completed"},
+    "exile": {"title": "🚫 全民公敌", "condition": "reputation <= 10", "immediate": true},
+    "manipulator": {"title": "🌙 神秘操纵者", "condition": "witch trust >= 70 and quest witch_favor completed"},
+    "wanderer": {"title": "🚶 无名过客", "condition": "10 < reputation < 80 at max turns without other endings"}
+  },
+  "quests": {
+    "help_task": {"name": "帮助一位镇民", "description": "对任意 NPC 完成一次 help（帮助）行为。", "unlocks": "hero"},
+    "witch_favor": {"name": "女巫的委托", "description": "把 1 个面包带给魔法屋的女巫（witch trust 达到 50 后在她面前使用 give_gift 面包，或直接 help witch）。", "unlocks": "manipulator"}
+  }
+}

@@ -1,0 +1,18 @@
+✅ 开始游戏
+✅ 欺骗事件处理 —— memory_status=saved
+✅ 守卫召回历史记忆 —— 第1天，玩家在面包店对面包店老板老张谎称了自己的身份（自称：自称是国王的儿子）。规则判定：声望-5，老张好感-5，老张信任-10。面包店老板老张对玩家的信任度现在是40，好感度是45。
+✅ 存在成功写入记录
+
+=== PowerContext 请求审计记录 ===
+  [2026-10-27 14:13:17] prepare        success=True scope=scp_34hx*** event=None status=ready
+  [2026-10-27 14:13:16] search         success=True scope=scp_34hx*** event=None query=王子 国王的儿子 hits=1
+  [2026-10-27 14:13:15] prepare        success=True scope=scp_34hx*** event=None status=ready
+  [2026-10-27 14:13:12] prepare        success=True scope=scp_34hx*** event=None status=ready
+  [2026-10-27 14:13:11] remember       success=True scope=scp_34hx*** event=evt_submission_memory_20261027_g0_002_lie_identity records=1
+  [2026-10-27 14:13:09] search         success=True scope=scp_34hx*** event=None query=玩家 hits=0
+  [2026-10-27 14:13:08] prepare        success=True scope=scp_34hx*** event=None status=empty
+  [2026-10-27 14:13:07] search         success=True scope=scp_34hx*** event=None query=老张 玩家 前往面包店 hits=0
+  [2026-10-27 14:13:06] prepare        success=True scope=scp_34hx*** event=None status=empty
+  [2026-10-27 14:13:03] create_scope   success=True scope=scp_34hx*** event=None idempotency_key=grudgetown-submission_memory_20261027-gen0
+
+🎉 全部验证通过：4/4
