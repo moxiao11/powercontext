@@ -1,0 +1,371 @@
+{
+  "label": "msedge-auto",
+  "channel": "msedge",
+  "mode": "auto",
+  "headless": false,
+  "startedAt": "2026-10-28T09:31:13.248Z",
+  "passed": true,
+  "checks": [
+    {
+      "name": "native_browser_launch",
+      "passed": true,
+      "evidence": {
+        "version": "156.0.4314.50",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36 Edg/156.0.0.0"
+      }
+    },
+    {
+      "name": "file_import_and_refresh",
+      "passed": true,
+      "evidence": "Real TXT uploaded through the app; one document/chunk searchable after refresh"
+    },
+    {
+      "name": "webgpu_preferred",
+      "passed": true,
+      "evidence": "当前推理后端\nWebGPU\nFP16"
+    },
+    {
+      "name": "hybrid_search_and_original_text",
+      "passed": true,
+      "evidence": {
+        "query": "青岚计划的验收口令是什么？",
+        "timing": "查询向量化 92 ms\nseekdb 检索 11 ms\n请求往返 23 ms",
+        "endToEnd": "116 ms 端到端",
+        "topResult": "acceptance.txt\n片段 1 / 1\n#1\n潮汐验收资料 TIDE-4826 本知识库的项目代号是青岚。青岚计划在十月完成本…\n\n潮汐验收资料 TIDE-4826 本知识库的项目代号是青岚。青岚计划在十月完成本地知识检索验收，负责人是资料管理员小林。验收口令是 TIDE-4826。\n\nseekdb RRF 排序\n查看原文"
+      }
+    },
+    {
+      "name": "idempotent_import",
+      "passed": true,
+      "evidence": "Same file imported twice; UI still reports 1 document/chunk"
+    },
+    {
+      "name": "incremental_import",
+      "passed": true,
+      "evidence": {
+        "query": "第二阶段的集合切换校验码是什么？",
+        "timing": "查询向量化 14 ms\nseekdb 检索 5 ms\n请求往返 16 ms",
+        "endToEnd": "73 ms 端到端",
+        "topResult": "独立浏览器第二批资料\n片段 1 / 1\n#1\n青岚计划第二阶段的集合切换校验码是 TIDE-5937，新增内容必须在索引刷新后…\n\n青岚计划第二阶段的集合切换校验码是 TIDE-5937，新增内容必须在索引刷新后可检索。\n\nseekdb RRF 排序\n查看原文"
+      }
+    },
+    {
+      "name": "collection_switch_isolation",
+      "passed": true,
+      "evidence": "Empty base returns 0; original base still returns its own documents"
+    },
+    {
+      "name": "browser_vectors_and_local_network",
+      "passed": true,
+      "evidence": {
+        "requests": 35,
+        "embeddingPayloads": 7,
+        "externalRequests": 0
+      }
+    }
+  ],
+  "database": "5.7.25-OceanBase seekdb-v1.4.0.0",
+  "launchArgs": [],
+  "browserVersion": "156.0.4314.50",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36 Edg/156.0.0.0",
+  "pageGPU": {
+    "apiExposed": true,
+    "adapterAvailable": true,
+    "shaderF16": true,
+    "error": null
+  },
+  "workerGPU": {
+    "apiExposed": true,
+    "adapterAvailable": true,
+    "shaderF16": true,
+    "error": null
+  },
+  "backend": "当前推理后端\nWebGPU\nFP16",
+  "backendReason": "WebGPU 适配器可用",
+  "firstQuery": {
+    "query": "青岚计划的验收口令是什么？",
+    "timing": "查询向量化 92 ms\nseekdb 检索 11 ms\n请求往返 23 ms",
+    "endToEnd": "116 ms 端到端",
+    "topResult": "acceptance.txt\n片段 1 / 1\n#1\n潮汐验收资料 TIDE-4826 本知识库的项目代号是青岚。青岚计划在十月完成本…\n\n潮汐验收资料 TIDE-4826 本知识库的项目代号是青岚。青岚计划在十月完成本地知识检索验收，负责人是资料管理员小林。验收口令是 TIDE-4826。\n\nseekdb RRF 排序\n查看原文"
+  },
+  "incrementalQuery": {
+    "query": "第二阶段的集合切换校验码是什么？",
+    "timing": "查询向量化 14 ms\nseekdb 检索 5 ms\n请求往返 16 ms",
+    "endToEnd": "73 ms 端到端",
+    "topResult": "独立浏览器第二批资料\n片段 1 / 1\n#1\n青岚计划第二阶段的集合切换校验码是 TIDE-5937，新增内容必须在索引刷新后…\n\n青岚计划第二阶段的集合切换校验码是 TIDE-5937，新增内容必须在索引刷新后可检索。\n\nseekdb RRF 排序\n查看原文"
+  },
+  "screenshot": "D:\\Desktop\\阶越星辰\\stepfun\\reports\\native-browser\\msedge-auto.png",
+  "restoredQuery": {
+    "query": "第二阶段的集合切换校验码是什么？",
+    "timing": "查询向量化 49 ms\nseekdb 检索 6 ms\n请求往返 15 ms",
+    "endToEnd": "72 ms 端到端",
+    "topResult": "独立浏览器第二批资料\n片段 1 / 1\n#1\n青岚计划第二阶段的集合切换校验码是 TIDE-5937，新增内容必须在索引刷新后…\n\n青岚计划第二阶段的集合切换校验码是 TIDE-5937，新增内容必须在索引刷新后可检索。\n\nseekdb RRF 排序\n查看原文"
+  },
+  "embeddingPayloads": [
+    {
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/chunks",
+      "count": 1,
+      "dimensions": [
+        512
+      ],
+      "norms": [
+        0.9999997230339632
+      ]
+    },
+    {
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/search",
+      "count": 1,
+      "dimensions": [
+        512
+      ],
+      "norms": [
+        0.9999999198839553
+      ]
+    },
+    {
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/chunks",
+      "count": 1,
+      "dimensions": [
+        512
+      ],
+      "norms": [
+        0.9999997230339632
+      ]
+    },
+    {
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/chunks",
+      "count": 1,
+      "dimensions": [
+        512
+      ],
+      "norms": [
+        0.9999997052211393
+      ]
+    },
+    {
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/search",
+      "count": 1,
+      "dimensions": [
+        512
+      ],
+      "norms": [
+        0.9999997148432709
+      ]
+    },
+    {
+      "path": "/api/bases/tide_346bab87ead849fba451ba6cb0e65caa/search",
+      "count": 1,
+      "dimensions": [
+        512
+      ],
+      "norms": [
+        0.9999996811597112
+      ]
+    },
+    {
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/search",
+      "count": 1,
+      "dimensions": [
+        512
+      ],
+      "norms": [
+        0.9999997148432709
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/assets/index-VoCMaAR0.js"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/assets/index-DJC8RDZ0.css"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/health"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/assets/embedding.worker-DEa68n6C.js"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/models/Xenova/bge-small-zh-v1.5/tokenizer.json"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/models/Xenova/bge-small-zh-v1.5/tokenizer_config.json"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/models/Xenova/bge-small-zh-v1.5/config.json"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/models/Xenova/bge-small-zh-v1.5/onnx/model_fp16.onnx"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/ort/ort-wasm-simd-threaded.jsep.mjs"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/ort/ort-wasm-simd-threaded.jsep.wasm"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/chunks"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/refresh"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/search"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/chunks"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/refresh"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/chunks"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/refresh"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/search"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases/tide_346bab87ead849fba451ba6cb0e65caa/search"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    },
+    {
+      "method": "POST",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases/tide_e2222fd09a14462284b30ed3612f0309/search"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:8788",
+      "path": "/api/bases"
+    }
+  ],
+  "externalRequests": [],
+  "pageErrors": [],
+  "injectedFailures": [],
+  "createdBases": [
+    "tide_e2222fd09a14462284b30ed3612f0309",
+    "tide_346bab87ead849fba451ba6cb0e65caa"
+  ],
+  "cleanup": [
+    {
+      "id": "tide_e2222fd09a14462284b30ed3612f0309",
+      "ok": true
+    },
+    {
+      "id": "tide_346bab87ead849fba451ba6cb0e65caa",
+      "ok": true
+    }
+  ],
+  "finishedAt": "2026-10-28T09:31:49.001Z"
+}

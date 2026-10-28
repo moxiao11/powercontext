@@ -1,0 +1,24 @@
+{
+  "label": "msedge-nogpu",
+  "channel": "msedge",
+  "mode": "nogpu",
+  "headless": true,
+  "startedAt": "2026-10-28T09:14:42.169Z",
+  "passed": false,
+  "checks": [],
+  "database": "5.7.25-OceanBase seekdb-v1.4.0.0",
+  "launchArgs": [
+    "--disable-gpu",
+    "--disable-software-rasterizer"
+  ],
+  "executablePath": "D:\\Desktop\\阶越星辰\\stepfun\\node_modules\\.cache\\tide-edge-156.0.4314.50\\app\\Chrome-bin\\msedge.exe",
+  "browserVersion": "156.0.4314.50",
+  "error": "browserContext.newPage: Target crashed ",
+  "requests": [],
+  "externalRequests": [],
+  "pageErrors": [],
+  "injectedFailures": [],
+  "createdBases": [],
+  "cleanup": [],
+  "finishedAt": "2026-10-28T09:14:42.973Z"
+}

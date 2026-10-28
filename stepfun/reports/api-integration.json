@@ -1,0 +1,35 @@
+{
+  "at": "2026-10-28T13:04:26.482Z",
+  "database": "5.7.25-OceanBase seekdb-v1.4.0.0",
+  "note": "Protocol tests use synthetic unit vectors only. These are not inference or benchmark results.",
+  "checks": [
+    {
+      "check": "Real seekdb reachable",
+      "passed": true
+    },
+    {
+      "check": "Unrefreshed writes block search",
+      "passed": true
+    },
+    {
+      "check": "Database hybrid search returns lexical branch despite different vector nearest neighbor",
+      "passed": true
+    },
+    {
+      "check": "Repeated import is idempotent",
+      "passed": true
+    },
+    {
+      "check": "Incremental import becomes searchable after barrier",
+      "passed": true
+    },
+    {
+      "check": "Concurrent collection queries remain isolated",
+      "passed": true
+    },
+    {
+      "check": "Dimension, zero norm and wrong model rejected",
+      "passed": true
+    }
+  ]
+}

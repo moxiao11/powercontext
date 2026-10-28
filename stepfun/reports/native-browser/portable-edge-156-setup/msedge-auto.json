@@ -1,0 +1,21 @@
+{
+  "label": "msedge-auto",
+  "channel": "msedge",
+  "mode": "auto",
+  "headless": false,
+  "startedAt": "2026-10-28T09:19:43.073Z",
+  "passed": false,
+  "checks": [],
+  "database": "5.7.25-OceanBase seekdb-v1.4.0.0",
+  "launchArgs": [],
+  "executablePath": "C:\\Users\\lenovo\\AppData\\Local\\Temp\\tide-edge-156.0.4314.50-test\\Chrome-bin\\156.0.4314.50\\msedge.exe",
+  "browserVersion": "156.0.4314.50",
+  "error": "browserContext.newPage: Target crashed ",
+  "requests": [],
+  "externalRequests": [],
+  "pageErrors": [],
+  "injectedFailures": [],
+  "createdBases": [],
+  "cleanup": [],
+  "finishedAt": "2026-10-28T09:19:47.635Z"
+}

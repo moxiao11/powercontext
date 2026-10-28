@@ -1,0 +1,21 @@
+{
+  "ReleaseId": 133338,
+  "Platform": "Windows",
+  "Architecture": "x64",
+  "CVEs": [
+    "CVE-2026-96196"
+  ],
+  "SeverityLevel": "Important",
+  "ProductVersion": "156.0.4314.50",
+  "Artifacts": [
+    {
+      "ArtifactName": "msi",
+      "Location": "https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/43a4cadd-6bb0-4325-83ba-ce03006a0b00/MicrosoftEdgeEnterpriseX64.msi",
+      "Hash": "F7BC427C4D26AEFE12BD492A24959CC6CA328AEA2851614637D7133CAE329071",
+      "HashAlgorithm": "SHA256",
+      "SizeInBytes": 215318528
+    }
+  ],
+  "PublishedTime": "2026-10-26T19:10:00",
+  "ExpectedExpiryDate": "2027-10-26T19:10:00"
+}

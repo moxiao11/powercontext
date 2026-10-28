@@ -1,0 +1,20 @@
+{
+  "label": "msedge-auto",
+  "channel": "msedge",
+  "mode": "auto",
+  "headless": true,
+  "startedAt": "2026-10-28T09:13:25.424Z",
+  "passed": false,
+  "checks": [],
+  "database": "5.7.25-OceanBase seekdb-v1.4.0.0",
+  "launchArgs": [],
+  "browserVersion": "132.0.2957.140",
+  "error": "Unexpected browser version\n+ actual - expected\n\n+ '132.0.2957.140'\n- '156.0.4314.50'\n",
+  "requests": [],
+  "externalRequests": [],
+  "pageErrors": [],
+  "injectedFailures": [],
+  "createdBases": [],
+  "cleanup": [],
+  "finishedAt": "2026-10-28T09:13:26.247Z"
+}
