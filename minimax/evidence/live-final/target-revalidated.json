@@ -1,0 +1,23 @@
+{
+  "command": [
+    "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "tests/test_target.py",
+    "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\live-final\\target-revalidated.xml"
+  ],
+  "cwd": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\live-final\\project",
+  "timestamp": "2026-10-28T09:45:17.598804+00:00",
+  "exit_code": 0,
+  "code_sha256": "1663474d90a338a2ea93378679910bc500d8c9f77e43b0d983d712e936a59c8e",
+  "test_sha256": "1511dabc3425dbef244056760898c7d56e73f72b9014a0f02c1a16dd5c0983a5",
+  "test_tree_sha256": "8241d1b2d0251be9d6707f28a09708c023c1422b37fc81195ad2fe4014b95863",
+  "project_fingerprint": "bc19628f24130c1633dd40662175bc132a9360cabf54f7bb37958f07e8cdd5aa",
+  "tests": 9,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0
+}

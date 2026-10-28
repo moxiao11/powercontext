@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-10-28T09:59:15.147172+00:00",
+  "checks": {
+    "no_credential_patterns": true,
+    "private_files_excluded": true,
+    "minimax_response_matches_code": true,
+    "before_snapshot_matches_tests": true,
+    "after_snapshot_matches_tests": true,
+    "tests_and_fixtures_unchanged": true,
+    "six_acceptance_items_passed": true,
+    "no_private_reasoning_or_auth_fields": true
+  },
+  "passed": true,
+  "files_checked": 256,
+  "known_key_available_for_exact_scan": false,
+  "credential_pattern_findings": [],
+  "private_file_findings": [],
+  "response_id": "0730f71cdffe3353482a38ec7b5e29ff",
+  "before_sha256": "b222f0b7340032e48941d16e9c9f2a9155c44d24fe267a83fc219b2fe68ca5ab",
+  "after_sha256": "1663474d90a338a2ea93378679910bc500d8c9f77e43b0d983d712e936a59c8e"
+}

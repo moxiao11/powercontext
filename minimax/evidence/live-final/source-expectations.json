@@ -1,0 +1,18 @@
+{
+  "required": [
+    "code:taskboard.py",
+    "spec:REQ-COMPAT",
+    "spec:REQ-STATUS",
+    "test:tests/conftest.py",
+    "test:tests/test_regression.py",
+    "test:tests/test_target.py"
+  ],
+  "actual": [
+    "code:taskboard.py",
+    "spec:REQ-COMPAT",
+    "spec:REQ-STATUS",
+    "test:tests/conftest.py",
+    "test:tests/test_regression.py",
+    "test:tests/test_target.py"
+  ]
+}

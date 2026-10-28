@@ -1,0 +1,94 @@
+{
+  "schema": "sdd.context.v1",
+  "project_id": "taskboard-live-8e5c97a3ef38",
+  "task": "taskboard 任务列表增加 status filter，保持 pagination compatibility",
+  "fingerprint": "dc466bfa932a8529e2b39a22b604b76dd11cb82b6a0e3901f88dc2cc311a2c60",
+  "specs": [
+    {
+      "doc_id": "spec:ADR-LEGACY",
+      "revision": 1,
+      "source_path": "specs/requirements.json",
+      "symbol": "ADR-LEGACY",
+      "start_line": 1,
+      "end_line": 29,
+      "content": "旧决策：忽略 status 参数，始终返回全部任务。",
+      "sha256": "0f153a0101b650914545f53656d264db1ba84a1271c0e04b50b22149c9026d74",
+      "source_sha256": "5a616397b8c267fc5cb5e900f439bd9d850aa4c1b31ccc0d602873f364195764",
+      "selection_reason": "task keyword or explicit source relationship"
+    },
+    {
+      "doc_id": "spec:REQ-STATUS",
+      "revision": 1,
+      "source_path": "specs/requirements.json",
+      "symbol": "REQ-STATUS",
+      "start_line": 1,
+      "end_line": 29,
+      "content": "旧版规格：status 只允许 todo 和 done；先筛选，再分页。此文件仅用于演示升级到当前规格。",
+      "sha256": "515307177d411cdc60c175b29aaff283763c01f3ffc3ace803f07c685d24980e",
+      "source_sha256": "5a616397b8c267fc5cb5e900f439bd9d850aa4c1b31ccc0d602873f364195764",
+      "selection_reason": "task keyword or explicit source relationship"
+    }
+  ],
+  "code": [
+    {
+      "doc_id": "code:taskboard.py",
+      "revision": 1,
+      "source_path": "taskboard.py",
+      "symbol": "list_tasks",
+      "start_line": 1,
+      "end_line": 8,
+      "content": "\"\"\"Initial Taskboard service: sorted pagination, status filtering not implemented.\"\"\"\n\n\ndef list_tasks(tasks, *, status=None, offset=0, limit=20):\n    if offset < 0 or limit <= 0:\n        raise ValueError(\"offset must be >= 0 and limit must be > 0\")\n    ordered = sorted(tasks, key=lambda task: task[\"id\"])\n    return [dict(task) for task in ordered[offset : offset + limit]]\n",
+      "sha256": "13786d46c7ad84c6a054c6b715387e8df0d639ce012a1f2cb3f3203eacf62f1e",
+      "source_sha256": "b222f0b7340032e48941d16e9c9f2a9155c44d24fe267a83fc219b2fe68ca5ab",
+      "selection_reason": "task keyword or explicit source relationship"
+    }
+  ],
+  "tests": [
+    {
+      "doc_id": "test:tests/conftest.py",
+      "revision": 1,
+      "source_path": "tests/conftest.py",
+      "symbol": "service, tasks",
+      "start_line": 1,
+      "end_line": 25,
+      "content": "import copy\nimport importlib.util\nfrom pathlib import Path\n\nimport pytest\n\n\n@pytest.fixture\ndef service():\n    path = Path(__file__).resolve().parents[1] / \"taskboard.py\"\n    spec = importlib.util.spec_from_file_location(\"taskboard_under_test\", path)\n    module = importlib.util.module_from_spec(spec)\n    spec.loader.exec_module(module)\n    return module.list_tasks\n\n\n@pytest.fixture\ndef tasks():\n    return copy.deepcopy([\n        {\"id\": 5, \"title\": \"publish\", \"status\": \"done\"},\n        {\"id\": 2, \"title\": \"design\", \"status\": \"doing\"},\n        {\"id\": 4, \"title\": \"review\", \"status\": \"done\"},\n        {\"id\": 1, \"title\": \"scope\", \"status\": \"todo\"},\n        {\"id\": 3, \"title\": \"implement\", \"status\": \"todo\"},\n    ])\n",
+      "sha256": "75b5f12016227c0ca6313b40f4838a947be9f89ee0decc4e8869215ee4d48c80",
+      "source_sha256": "5f2938ab00452aeef5d59a03b96368a3a28e409d02235fef97ccfdddcd7d98a5",
+      "selection_reason": "task keyword or explicit source relationship"
+    },
+    {
+      "doc_id": "test:tests/test_regression.py",
+      "revision": 1,
+      "source_path": "tests/test_regression.py",
+      "symbol": "test_default_order, test_explicit_none, test_pagination, test_default_limit, test_invalid_pagination, test_empty, test_offset_beyond_end, test_input_not_mutated",
+      "start_line": 1,
+      "end_line": 41,
+      "content": "import copy\n\nimport pytest\n\n\ndef test_default_order(service, tasks):\n    assert [task[\"id\"] for task in service(tasks)] == [1, 2, 3, 4, 5]\n\n\ndef test_explicit_none(service, tasks):\n    assert service(tasks, status=None) == service(tasks)\n\n\ndef test_pagination(service, tasks):\n    assert [task[\"id\"] for task in service(tasks, offset=1, limit=2)] == [2, 3]\n\n\ndef test_default_limit(service):\n    tasks = [{\"id\": i, \"status\": \"todo\"} for i in range(30)]\n    assert len(service(tasks)) == 20\n\n\n@pytest.mark.parametrize(\"kwargs\", [{\"offset\": -1}, {\"limit\": 0}, {\"limit\": -1}])\ndef test_invalid_pagination(service, kwargs):\n    with pytest.raises(ValueError):\n        service([], **kwargs)\n\n\ndef test_empty(service):\n    assert service([]) == []\n\n\ndef test_offset_beyond_end(service, tasks):\n    assert service(tasks, offset=100) == []\n\n\ndef test_input_not_mutated(service, tasks):\n    before = copy.deepcopy(tasks)\n    result = service(tasks)\n    result[0][\"title\"] = \"changed output\"\n    assert tasks == before\n",
+      "sha256": "bcc7ec612c4f5aa5c53eca21a178ff28dfc4cbcbd4104faa89523497ef4a376a",
+      "source_sha256": "5926814b18ec955b945a978f49e450077e7984c7535e6ea362a1ef303e7aa6c0",
+      "selection_reason": "task keyword or explicit source relationship"
+    },
+    {
+      "doc_id": "test:tests/test_target.py",
+      "revision": 1,
+      "source_path": "tests/test_target.py",
+      "symbol": "test_status_filter, test_invalid_status, test_filter_before_pagination, test_no_matches, test_filter_keeps_input_unchanged",
+      "start_line": 1,
+      "end_line": 29,
+      "content": "import copy\n\nimport pytest\n\n\n@pytest.mark.parametrize(\"status,expected\", [(\"todo\", [1, 3]), (\"doing\", [2]), (\"done\", [4, 5])])\ndef test_status_filter(service, tasks, status, expected):\n    assert [task[\"id\"] for task in service(tasks, status=status)] == expected\n\n\n@pytest.mark.parametrize(\"status\", [\"unknown\", \"\", \"DONE\"])\ndef test_invalid_status(service, tasks, status):\n    with pytest.raises(ValueError, match=\"status\"):\n        service(tasks, status=status)\n\n\ndef test_filter_before_pagination(service, tasks):\n    assert [task[\"id\"] for task in service(tasks, status=\"done\", offset=1, limit=1)] == [5]\n\n\ndef test_no_matches(service):\n    assert service([{\"id\": 1, \"status\": \"todo\"}], status=\"done\") == []\n\n\ndef test_filter_keeps_input_unchanged(service, tasks):\n    before = copy.deepcopy(tasks)\n    result = service(tasks, status=\"todo\")\n    result[0][\"title\"] = \"changed output\"\n    assert tasks == before\n",
+      "sha256": "4cac22763ed73fae9f6cf6a1c2fabffb00d98ef247954ad68dd84b4fcbf05191",
+      "source_sha256": "1511dabc3425dbef244056760898c7d56e73f72b9014a0f02c1a16dd5c0983a5",
+      "selection_reason": "task keyword or explicit source relationship"
+    }
+  ],
+  "progress": {
+    "status": "empty",
+    "completed": [],
+    "pending": [
+      "implement",
+      "verify"
+    ],
+    "validation": "missing",
+    "next_action": "implement"
+  }
+}

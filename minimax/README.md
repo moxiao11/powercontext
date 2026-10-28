@@ -2,7 +2,7 @@
 
 本作品为开发助手提供当前有效的规格、相关实现和测试，通过 seekdb 存储与查询工程资料，通过 PowerContext 保存并复用任务状态，再由 MiniMax 参与局部代码修改。
 
-**当前交付状态：本地参考模式已验证。尚无 MiniMax 凭据，真实模型参与项未完成，不能按题面宣称获得 20 分。** 参见 `SUBMISSION_STATUS.md` 和 `evidence/reference-final/acceptance.json`。参考模式会明确输出 `all_six_passed=false`，不会伪造 MiniMax 记录。
+**当前交付状态：2026-10-28 已完成真实 MiniMax-M2.5 代码修改，六项本地验收及提交证据检查全部通过。** 参见 `SUBMISSION_STATUS.md` 和 `evidence/live-final/acceptance.json`。用户指定参赛仓库的推送和测评平台提交仍待完成；本地结果不替代评审最终结果。历史参考模式记录继续保留，并明确标注 `all_six_passed=false`。
 
 ## 依赖和目录
 
@@ -86,7 +86,7 @@ python -m sdd_context demo --mode reference
 
 ## 真实 MiniMax 开发流程
 
-在本机 `.env` 中填写凭据，或通过进程环境设置 `MINIMAX_API_KEY`。不要将密钥提交到 Git 或发送到聊天。按凭据类型设置 `MINIMAX_API_URL`、`MINIMAX_MODEL`；默认采用 MiniMax 官方原生文本接口与 `MiniMax-M2.5`。
+在本机 `.env` 中填写凭据，或通过进程环境设置 `MINIMAX_API_KEY`。不要将密钥提交到 Git 或发送到聊天。按凭据类型设置 `MINIMAX_API_URL`、`MINIMAX_MODEL`；默认采用已实际验证的 MiniMax 中国站 OpenAI 兼容 HTTP 接口 `https://api.minimax.cn/v1/chat/completions` 与 `MiniMax-M2.5`。
 
 ```bash
 python -m sdd_context demo --mode live
@@ -103,6 +103,14 @@ python scripts/verify_submission.py <运行目录>
 ```
 
 只有真实模式的六项状态全部通过且相关记录齐全，检查器才退出 0。对交付的参考记录执行此命令，预期退出 1，并指出 MiniMax 记录缺失。
+
+核对本次已完成的真实开发证据：
+
+```bash
+python scripts/verify_submission.py evidence/live-final
+```
+
+预期退出 0，`submission_evidence_ready=true`。`minimax-attempt-1/request.json` 保存实际输入上下文，`response.json` 保存模型生成的实现与响应 ID；对应差异和全部测试位于同一证据目录。此核对不需要再次调用付费模型。
 
 ## 独立调用入口
 
@@ -142,7 +150,7 @@ python scripts/check.py --integration --output runtime/checks-1
 
 ## 已知限制
 
-- 当前无真实 MiniMax 凭据及参赛私有仓库，尚未完成模型调用和平台固定提交。
+- 真实 MiniMax 调用及本地六项验收已完成；用户指定参赛仓库的推送与平台固定提交尚未完成。
 - 检索使用标签、关键词和显式关系，不提供大型仓库的向量召回、复杂规格冲突自动裁决或完整 Agent 会话恢复。
 - 规格生命周期由工程资料明确声明；多个相互矛盾的活跃规格需要维护者修订。
 - 哈希包含整个已声明工程快照；无关资料变化也可能保守地要求重新验证。

@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-10-28T09:45:08.609344+00:00",
+  "provider": "minimax",
+  "live": true,
+  "requested_model": "MiniMax-M2.5",
+  "returned_model": "MiniMax-M2.5",
+  "response_id": "0730f71cdffe3353482a38ec7b5e29ff",
+  "usage": {
+    "total_tokens": 2930,
+    "total_characters": 0,
+    "prompt_tokens": 2568,
+    "completion_tokens": 362,
+    "completion_tokens_details": {
+      "reasoning_tokens": 139
+    },
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "latency_seconds": 7.637,
+  "before_sha256": "b222f0b7340032e48941d16e9c9f2a9155c44d24fe267a83fc219b2fe68ca5ab",
+  "edit": {
+    "path": "taskboard.py",
+    "content": "\"\"\"Taskboard service with status filtering, sorting, and pagination.\"\"\"\n\n\ndef list_tasks(tasks, *, status=None, offset=0, limit=20):\n    if offset < 0 or limit <= 0:\n        raise ValueError(\"offset must be >= 0 and limit must be > 0\")\n\n    if status is not None and status not in {\"todo\", \"doing\", \"done\"}:\n        raise ValueError(\"status must be one of: todo, doing, done\")\n\n    filtered = tasks if status is None else [task for task in tasks if task.get(\"status\") == status]\n    ordered = sorted(filtered, key=lambda task: task[\"id\"])\n    return [dict(task) for task in ordered[offset : offset + limit]]\n",
+    "summary": "Added validated status filtering before ID sorting and pagination while preserving existing defaults, error behavior, and copy semantics."
+  }
+}

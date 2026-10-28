@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-10-28T09:50:18.505717+00:00",
+  "command": [
+    "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/test_unit.py",
+    "tests/test_integration.py",
+    "--tb=short",
+    "--basetemp=D:\\oceanbase\\powercontext-minimax\\minimax\\runtime\\test-checks-live-final",
+    "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\checks-live-final\\results.xml"
+  ],
+  "exit_code": 0,
+  "real_services": true,
+  "source_hashes": {
+    "sdd_context\\__init__.py": "7380f90c8d040d3275c42fc0437780fc56d9accc7df0796512a3429246c3fc00",
+    "sdd_context\\__main__.py": "ec2e9eb62511974574763502e5966c613c2507b10892d912aa030a6522b87969",
+    "sdd_context\\agent.py": "8acc6481656fa01f2f8b6a9bad521daaed2ab2c654f0f1ce0a29d83cd21891b9",
+    "sdd_context\\common.py": "66277f0ba4177842e72f9716c60a4e68092aba75d42ab44be679025ab7d00238",
+    "sdd_context\\context.py": "434ab13c61526967cfe1d051101e7b95805b0a4c706ab9ab2c375e20b623f94f",
+    "sdd_context\\demo.py": "e5af9142dd8e50213583ae5e3fbe673f49c6eb369ab2b18f178bccd8ad4c32e6",
+    "sdd_context\\ingest.py": "69653a560d8156c2158fc401c106adee99a5b99959120f79dd84023a14563d8f",
+    "sdd_context\\state.py": "fa907b04fd737282bc5f4a3e49966edb4c36b3b8c7d5ab10c1a5ef64cc78230f",
+    "sdd_context\\store.py": "8c3fbe004eede0f59fcca48f7cae653da18c5effa1451cb3555f8c615c70c8aa"
+  }
+}

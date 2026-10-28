@@ -1,0 +1,32 @@
+{
+  "project_id": "taskboard-live-8e5c97a3ef38",
+  "snapshot_sha256": "a56cd96d1dbe1537df05f68ab8106bdaa33a8030b82d31337c7429a0aabf0a25",
+  "changed": [
+    {
+      "doc_id": "spec:REQ-STATUS",
+      "revision": 1
+    },
+    {
+      "doc_id": "spec:ADR-LEGACY",
+      "revision": 1
+    },
+    {
+      "doc_id": "code:taskboard.py",
+      "revision": 1
+    },
+    {
+      "doc_id": "test:tests/test_target.py",
+      "revision": 1
+    },
+    {
+      "doc_id": "test:tests/test_regression.py",
+      "revision": 1
+    },
+    {
+      "doc_id": "test:tests/conftest.py",
+      "revision": 1
+    }
+  ],
+  "document_count": 6,
+  "unchanged": false
+}

@@ -1,0 +1,105 @@
+{
+  "schema": "sdd.acceptance.v1",
+  "run_id": "taskboard-live-8e5c97a3ef38",
+  "timestamp": "2026-10-28T09:45:21.272755+00:00",
+  "mode": "live",
+  "output": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\live-final",
+  "project_id": "taskboard-live-8e5c97a3ef38",
+  "versions": {
+    "powercontext": "1.4.1",
+    "PyMySQL": "1.2.0",
+    "pytest": "8.4.2",
+    "httpx": "0.28.1"
+  },
+  "database_version": "5.7.25-OceanBase seekdb-v1.4.0.0",
+  "acceptance": {
+    "runnable": "passed",
+    "minimax_actual_participation": "passed",
+    "context_correct_and_updates": "passed",
+    "database_actual_participation": "passed",
+    "powercontext_state_reused": "passed",
+    "code_change_valid": "passed"
+  },
+  "implementation_checks_passed": true,
+  "all_six_passed": true,
+  "submission_ready": true,
+  "target_before": {
+    "command": [
+      "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_target.py",
+      "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\live-final\\target-before.xml"
+    ],
+    "cwd": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\live-final\\project",
+    "timestamp": "2026-10-28T09:44:56.601417+00:00",
+    "exit_code": 1,
+    "code_sha256": "b222f0b7340032e48941d16e9c9f2a9155c44d24fe267a83fc219b2fe68ca5ab",
+    "test_sha256": "1511dabc3425dbef244056760898c7d56e73f72b9014a0f02c1a16dd5c0983a5",
+    "test_tree_sha256": "8241d1b2d0251be9d6707f28a09708c023c1422b37fc81195ad2fe4014b95863",
+    "project_fingerprint": "2a3def1829757e167503d8cecd1952e0b79f41b1b64de0c339aea76cf495ceb5",
+    "tests": 9,
+    "failures": 8,
+    "errors": 0,
+    "skipped": 0
+  },
+  "target_after": {
+    "command": [
+      "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_target.py",
+      "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\live-final\\target-after-1.xml"
+    ],
+    "cwd": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\live-final\\project",
+    "timestamp": "2026-10-28T09:45:10.000840+00:00",
+    "exit_code": 0,
+    "code_sha256": "1663474d90a338a2ea93378679910bc500d8c9f77e43b0d983d712e936a59c8e",
+    "test_sha256": "1511dabc3425dbef244056760898c7d56e73f72b9014a0f02c1a16dd5c0983a5",
+    "test_tree_sha256": "8241d1b2d0251be9d6707f28a09708c023c1422b37fc81195ad2fe4014b95863",
+    "project_fingerprint": "2a4b19b64ac76ef6831e2abd88106a94cfbf0b1f885ebb8c9f1fbaf975c6989e",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "regression_after": {
+    "command": [
+      "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_regression.py",
+      "--junitxml=D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\live-final\\regression-after-1.xml"
+    ],
+    "cwd": "D:\\oceanbase\\powercontext-minimax\\minimax\\evidence\\live-final\\project",
+    "timestamp": "2026-10-28T09:45:11.552529+00:00",
+    "exit_code": 0,
+    "code_sha256": "1663474d90a338a2ea93378679910bc500d8c9f77e43b0d983d712e936a59c8e",
+    "test_sha256": "5926814b18ec955b945a978f49e450077e7984c7535e6ea362a1ef303e7aa6c0",
+    "test_tree_sha256": "8241d1b2d0251be9d6707f28a09708c023c1422b37fc81195ad2fe4014b95863",
+    "project_fingerprint": "2a4b19b64ac76ef6831e2abd88106a94cfbf0b1f885ebb8c9f1fbaf975c6989e",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "state_update_invalidates_validation": true,
+  "source_expectations": [
+    "code:taskboard.py",
+    "spec:REQ-COMPAT",
+    "spec:REQ-STATUS",
+    "test:tests/conftest.py",
+    "test:tests/test_regression.py",
+    "test:tests/test_target.py"
+  ],
+  "limitations": []
+}

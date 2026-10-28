@@ -32,7 +32,7 @@ def generate_edit(root: Path, context: dict, output: Path, feedback: str = "") -
         raise RuntimeError("MINIMAX_API_KEY is missing. A reference run is not MiniMax participation.")
     if not all(context[section] for section in ("specs", "code", "tests")):
         raise ValueError("Refusing generation without specifications, implementation and tests")
-    endpoint = os.getenv("MINIMAX_API_URL", "https://api.minimaxi.com/v1/text/chatcompletion_v2")
+    endpoint = os.getenv("MINIMAX_API_URL", "https://api.minimax.cn/v1/chat/completions")
     if not endpoint.startswith("https://"):
         raise ValueError("MiniMax API URL must use HTTPS")
     model = os.getenv("MINIMAX_MODEL", "MiniMax-M2.5")

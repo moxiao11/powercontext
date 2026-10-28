@@ -1,0 +1,12 @@
+{
+  "command": [
+    "D:\\oceanbase\\powercontext-minimax\\minimax\\.venv\\Scripts\\python.exe",
+    "scripts/verify_submission.py",
+    "evidence/live-final"
+  ],
+  "exit_code": 0,
+  "result": {
+    "submission_evidence_ready": true,
+    "issues": []
+  }
+}
