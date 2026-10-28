@@ -2,7 +2,7 @@
 
 记录日期：2026-10-28。
 
-源码基于题目指定的 `2026-competition-ecosystem` 分支。真实 MiniMax 代码修改及六项本地验收全部完成，提交证据检查器返回 `submission_evidence_ready=true`。参赛仓库为 `https://github.com/moxiao11/powercontext`，远端推送及平台提交尚待完成；本地结果不替代评审最终结果。
+源码基于题目指定的 `2026-competition-ecosystem` 分支。真实 MiniMax 代码修改及六项本地验收全部完成，提交证据检查器返回 `submission_evidence_ready=true`。已推送到 `https://github.com/moxiao11/powercontext` 的比赛分支，并核对远端和本地哈希一致。测评平台最终登记尚未执行，本地结果不替代评审最终结果。
 
 仓库目前为公开 fork，已向用户说明；用户明确选择继续提交到该仓库。保留其现有可见性及 Dify、Qoder 等其他赛道内容，不强制覆盖已有分支。
 
@@ -40,10 +40,25 @@
 
 打包审计还发现 Windows 文本写入会转换代码快照的换行。最终实现已改为按原始字节复制前后快照，并在演示中强制核对快照哈希与测试源码哈希；Git 规则保留运行证据的原始字节。修复前记录保留于带 `before-byte-snapshot-fix` 后缀的证据目录。
 
-## 尚待完成的远端步骤
+## 远端交付与平台填写
 
-1. 将基于指定比赛分支、包含源码与真实验收证据的最终提交推送到 `moxiao11/powercontext`。
-2. 在测评平台登记最终分支和固定 commit，由评审实际执行验证。
+| 字段 | 填写方式 |
+| --- | --- |
+| 仓库地址 | `https://github.com/moxiao11/powercontext` |
+| 分支 | `2026-competition-ecosystem` |
+| Commit | 最新且已经推送的完整 40 位哈希，以最终远端核对结果为准 |
+| 作品目录 | `minimax/` |
+
+首次包含真实验收记录的推送已核对为 `674ca883861d6cf05910717ff733cd628e8fff23`；该版本合并了远端最新的 StepFun 提交并保留其他赛道内容。后续交付说明会产生更新提交，平台应填写最终已推送哈希，而非仅存在本机的提交。
+
+核对命令（从仓库根目录执行）：
+
+```bash
+git rev-parse HEAD
+git ls-remote competition refs/heads/2026-competition-ecosystem
+```
+
+两者哈希应一致。推送通过用户正常授权的 GitHub HTTPS / Git Credential Manager 完成，没有修改仓库可见性，没有强制覆盖分支。平台表单仍需用户使用最终分支和 commit 登记，由评审实际执行验证。
 
 题面为六项全通过得 20 分。本机已通过六项条件；最终比赛结果仍以平台评审为准。
 

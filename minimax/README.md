@@ -2,7 +2,7 @@
 
 本作品为开发助手提供当前有效的规格、相关实现和测试，通过 seekdb 存储与查询工程资料，通过 PowerContext 保存并复用任务状态，再由 MiniMax 参与局部代码修改。
 
-**当前交付状态：2026-10-28 已完成真实 MiniMax-M2.5 代码修改，六项本地验收及提交证据检查全部通过。** 参见 `SUBMISSION_STATUS.md` 和 `evidence/live-final/acceptance.json`。用户指定参赛仓库的推送和测评平台提交仍待完成；本地结果不替代评审最终结果。历史参考模式记录继续保留，并明确标注 `all_six_passed=false`。
+**当前交付状态：2026-10-28 已完成真实 MiniMax-M2.5 代码修改，六项本地验收及提交证据检查全部通过，并已推送到用户指定的 `moxiao11/powercontext` 比赛分支。** 参见 `SUBMISSION_STATUS.md` 和 `evidence/live-final/acceptance.json`。测评平台的最终登记由用户完成；本地结果不替代评审最终结果。历史参考模式记录继续保留，并明确标注 `all_six_passed=false`。
 
 ## 依赖和目录
 
@@ -150,7 +150,7 @@ python scripts/check.py --integration --output runtime/checks-1
 
 ## 已知限制
 
-- 真实 MiniMax 调用及本地六项验收已完成；用户指定参赛仓库的推送与平台固定提交尚未完成。
+- 真实 MiniMax 调用、本地六项验收及仓库推送已完成；测评平台最终登记尚未执行。
 - 检索使用标签、关键词和显式关系，不提供大型仓库的向量召回、复杂规格冲突自动裁决或完整 Agent 会话恢复。
 - 规格生命周期由工程资料明确声明；多个相互矛盾的活跃规格需要维护者修订。
 - 哈希包含整个已声明工程快照；无关资料变化也可能保守地要求重新验证。
