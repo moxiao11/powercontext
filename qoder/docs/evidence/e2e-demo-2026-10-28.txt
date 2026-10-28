@@ -1,0 +1,125 @@
+
+=== 0. 服务健康检查 ===
+{
+  "status": "ok",
+  "seekdb": {
+    "connected": true,
+    "mode": "remote",
+    "version": "5.7.25-OceanBase seekdb-v1.4.0.0"
+  },
+  "powercontext": {
+    "url": "http://powercontext:8000",
+    "reachable": true,
+    "ready": true
+  },
+  "llm": {
+    "configured": false,
+    "model": null,
+    "base_url": null
+  },
+  "embedding": {
+    "provider": "local-hash-fallback",
+    "dimension": 384
+  }
+}
+  [[92mPASS[0m] seekdb 已连接 — 5.7.25-OceanBase seekdb-v1.4.0.0
+  [[92mPASS[0m] PowerContext 就绪 — http://powercontext:8000
+
+=== 1. 创建演示项目（绑定 PowerContext Scope） ===
+  project_id=prj_132c46262c604e98 pc_scope_id=scp_50a0fhq99v2mdp9t9qtcfpbkja
+  [[92mPASS[0m] 项目创建成功
+  [[92mPASS[0m] PowerContext Scope 已绑定
+  [[92mPASS[0m] 研究方向已写入 PowerContext 记忆 — research_profile
+
+=== 2. 演示 A：导入样例论文并在 seekdb 建立索引 ===
+  sample-3d-mem: chunks=3 pages=1 embeddings=local-hash-fallback
+  [[92mPASS[0m] sample-3d-mem.md 已分块入库 — 3 chunks
+  sample-memory-survey: chunks=3 pages=1 embeddings=local-hash-fallback
+  [[92mPASS[0m] sample-memory-survey.md 已分块入库 — 3 chunks
+  sample-sequential-eqa: chunks=3 pages=1 embeddings=local-hash-fallback
+  [[92mPASS[0m] sample-sequential-eqa.md 已分块入库 — 3 chunks
+  [[92mPASS[0m] seekdb 中可查询到全部文档 — total=3
+
+=== 3. 演示 A：混合检索（真实经过 seekdb） ===
+  engine=OceanBase seekdb 5.7.25-OceanBase seekdb-v1.4.0.0
+  sql_mode=seekdb FULLTEXT (MATCH...AGAINST) + VECTOR ANN (l2_distance APPROXIMATE), RRF fusion
+    [0.032787] sample-memory-survey · 全文 · matched_by=['fulltext', 'vector']
+    [0.032258] sample-memory-survey · 全文 · matched_by=['fulltext', 'vector']
+    [0.031498] sample-sequential-eqa · 全文 · matched_by=['fulltext', 'vector']
+    [0.031258] sample-memory-survey · 全文 · matched_by=['fulltext', 'vector']
+    [0.03101] sample-3d-mem · 全文 · matched_by=['fulltext', 'vector']
+    [0.030303] sample-sequential-eqa · 全文 · matched_by=['fulltext', 'vector']
+  [[92mPASS[0m] 混合检索返回证据 — 6 hits
+  [[92mPASS[0m] 检索引擎为 OceanBase seekdb — OceanBase seekdb 5.7.25-OceanBase seekdb-v1.4.0.0
+  [[92mPASS[0m] 命中多篇不同论文
+  [[92mPASS[0m] 关键词检索（FULLTEXT）可用 — 5 hits
+  [[92mPASS[0m] 向量检索（ANN）可用 — 5 hits
+  [[92mPASS[0m] 引用可回溯到原始分块 — doc chunks=3
+
+=== 4. 演示 B：导入实验记录并对比 ===
+  imported=4
+  [[92mPASS[0m] 实验记录导入成功
+  [[92mPASS[0m] baseline 实验存在
+  [[92mPASS[0m] HSM v1 实验存在
+  差异字段数=8
+    accuracy: 41.2 → 58.7 (Δ=17.5)
+    history_dependent_accuracy: 22.6 → 54.1 (Δ=31.5)
+    latency_ms: 210 → 265 (Δ=55)
+    peak_memory_gb: 3.1 → 4.2 (Δ=1.1)
+  [[92mPASS[0m] 准确率差异来自数据库真实记录 — Δ=17.5
+  [[92mPASS[0m] 可查询效果最好的实验 — HSM v1：物体摘要 + IoU 合并
+  [[92mPASS[0m] 实验全文检索命中失败记录 — 2 hits · FULLTEXT MATCH ... AGAINST
+  [[92mPASS[0m] 可按状态筛选已放弃的实验 — 1 条
+    放弃原因：外观嵌入对视角变化过于敏感，阈值 0.85 过严；该方案在当前检测器输出质量下不可行，已放弃
+
+=== 5. 演示 C：保存研究进度到 PowerContext ===
+  source={'name': 'content', 'source_id': 'labtrace-session-demo-session-day1-20261028015922'}
+  memories=8 handoff=committed
+  [[92mPASS[0m] 会话已作为 Source 写入 PowerContext
+  [[92mPASS[0m] 记忆条目已写入 — 8 条
+  [[92mPASS[0m] Handoff 已提交（持久化研究进度里程碑） — {"status": "committed", "reference": {"family": "handoff", "artifact_id": "handoff", "revision": 1}}
+
+=== 6. 演示 C：全新会话恢复研究上下文 ===
+  --- 恢复结果 ---
+  已从 PowerContext 恢复当前有效的记忆条目：
+  - 研究方向：研究方向：Embodied Question Answering 与 3D Scene Memory；长期目标：在长时序具身问答中用可控内存的记忆机制提升历史依赖型问题准确率。
+  - 研究决策：符号化物体摘要在显存与准确率上同时优于稠密帧缓存 [session:demo-session-day1]
+  - 研究决策：全局外观嵌入重识别方案不可行：视角变化导致相似度阈值失效，已放弃 [session:demo-session-day1]
+  - 失败记录：HSM v2 全局外观嵌入重识别使准确率从 58.7% 降到 53.9%；原因：experiment HSM v2 abandoned [session:demo-session-day1]
+  - 进展：完成 HSM v1 物体摘要记忆（accuracy 58.7%，显存 4.2 GB） [session:demo-session-day1]
+  - 进展：完成 Frame-Buffer 64 帧对照实验（accuracy 52.4%，显存 11.8 GB） [session:demo-session-day1]
+  - 进展：完成无记忆 baseline 评测（accuracy 41.2%） [session:demo-session-day1]
+  - 下一步：实现房间 ID 硬约束 + 多视角平均嵌入的合并策略（HSM v3） [session:demo-session-day1]
+  - 下一步：在 EQA-Long 上复测计数类问题子集 [session:demo-session-day1]
+  [[92mPASS[0m] Handoff 可在新会话中读取 — resolved
+  [[92mPASS[0m] 恢复内容包含下一步计划
+  [[92mPASS[0m] 记忆条目总数 >= 6 — 9 条
+  记忆分类统计：{'research_profile': 1, 'decision': 2, 'failure': 1, 'progress': 3, 'next_action': 2}
+  [[92mPASS[0m] 记忆按类别隔离存储
+
+=== 7. 演示 C：AI 助手按问题类型选择数据源 ===
+  Q: 这些论文分别使用了什么记忆架构？
+    intent=mixed llm_used=False sources=['seekdb.paper_chunks', 'seekdb.experiments', 'powercontext.memory_list']
+  [[92mPASS[0m] 数据源包含 seekdb.paper_chunks — seekdb.paper_chunks, seekdb.experiments, powercontext.memory_list
+  Q: 之前为什么放弃 HSM v2 这个方案？
+    intent=mixed llm_used=False sources=['seekdb.paper_chunks', 'seekdb.experiments', 'powercontext.prepared_context', 'powercontext.memory_search']
+  [[92mPASS[0m] 数据源包含 seekdb.experiments — seekdb.paper_chunks, seekdb.experiments, powercontext.prepared_context, powercontext.memory_search
+  Q: 我上次研究到哪里了？下一步做什么？
+    intent=memory llm_used=False sources=['powercontext.memory_list']
+  [[92mPASS[0m] 数据源包含 powercontext. — powercontext.memory_list
+
+=== 8. 演示 D：生成科研周报 ===
+  counts={"documents": 3, "experiments": 4, "decisions": 2, "failures": 1, "next_actions": 2} llm_used=False
+  [[92mPASS[0m] 周报包含本周论文
+  [[92mPASS[0m] 周报包含真实实验指标 — HSM v1 accuracy
+  [[92mPASS[0m] 周报包含失败原因
+  [[92mPASS[0m] 周报包含下一步计划
+  已导出：/mnt/d/Desktop/qorder/powercontext/qoder/sample-data/generated-sample-report.md
+
+=== 9. 记忆管理：修订与停用 ===
+  [[92mPASS[0m] 记忆修订返回新版本 — version=2
+  [[92mPASS[0m] 记忆停用成功
+  [[92mPASS[0m] 停用后默认列表不再包含该条，但历史可追溯 — active=8 all=9
+
+============================================================
+[92mPASS[0m 全部检查通过

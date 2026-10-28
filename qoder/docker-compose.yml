@@ -1,0 +1,118 @@
+# LabTrace on Docker Compose: PowerContext Server + LabTrace backend (both with embedded
+# OceanBase seekdb) + the built frontend behind nginx.
+#
+#   docker compose up -d --build
+#   open http://localhost:5173
+#
+# Optional mirrors (faster in mainland China, or required when docker.io is unreachable):
+#   PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
+#   NPM_REGISTRY=https://registry.npmmirror.com \
+#   PYTHON_BASE_IMAGE=docker.m.daocloud.io/library/python:3.12-slim \
+#   NODE_BASE_IMAGE=docker.m.daocloud.io/library/node:22-alpine \
+#   NGINX_BASE_IMAGE=docker.m.daocloud.io/library/nginx:1.27-alpine \
+#   docker compose up -d --build
+#
+# Host ports default to the same values the native dev scripts use; override them in the
+# shell or in qoder/.env if a native stack is already running
+# (e.g. LABTRACE_WEB_PORT=15173 LABTRACE_API_PORT=18100 POWERCONTEXT_PORT=18010).
+name: labtrace
+
+services:
+  powercontext:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.powercontext
+      args:
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
+        BASE_IMAGE: ${PYTHON_BASE_IMAGE:-python:3.12-slim}
+    image: labtrace/powercontext:1.2.0
+    container_name: labtrace-powercontext
+    environment:
+      POWERCONTEXT_SERVER_HTTP_HOST: 0.0.0.0
+      POWERCONTEXT_SERVER_HTTP_PORT: "8000"
+      POWERCONTEXT_SERVER_DATABASE_KIND: seekdb
+      POWERCONTEXT_SERVER_DATABASE_PATH: /data/powercontext-seekdb
+      # A container has to bind a non-loopback address, and PowerContext refuses to do that
+      # without authentication, so the compose stack always runs with a static Bearer token
+      # (ACCESS_MODE=enforced maps the token to the built-in admin principal). The token is
+      # required and never defaults to a committed value.
+      POWERCONTEXT_SERVER_ACCESS_MODE: enforced
+      POWERCONTEXT_SERVER_AUTH_TOKEN: ${POWERCONTEXT_AUTH_TOKEN:?set POWERCONTEXT_AUTH_TOKEN in qoder/.env or the shell}
+      POWERCONTEXT_SERVER_MCP_ENABLED: "true"
+      POWERCONTEXT_SERVER_LOGGING_LEVEL: ${POWERCONTEXT_LOG_LEVEL:-INFO}
+      # Model-provider settings live in docker/powercontext-inference.env (optional, gitignored).
+      # They must NOT be set to an empty string here: ServerSettings rejects empty inference
+      # identifiers with "inference identifiers must not be empty", so an unset variable is the
+      # only way to run without a provider. In that mode explicit Memory and Handoff writes work
+      # normally and PreparedContext returns status=empty, which the UI reports instead of hiding.
+    env_file:
+      - path: docker/powercontext-inference.env
+        required: false
+    volumes:
+      - powercontext-data:/data
+    ports:
+      - "127.0.0.1:${POWERCONTEXT_PORT:-8010}:8000"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+      args:
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
+        BASE_IMAGE: ${PYTHON_BASE_IMAGE:-python:3.12-slim}
+    image: labtrace/backend:0.1.0
+    container_name: labtrace-backend
+    depends_on:
+      powercontext:
+        condition: service_healthy
+    environment:
+      SEEKDB_MODE: embedded
+      SEEKDB_PATH: /data/labtrace-seekdb
+      # Embedded seekdb ships only its built-in `test` database (PowerContext uses the same one),
+      # so that is the default here. The remote override in docker/docker-compose.seekdb-server.yml
+      # creates and selects `labtrace` through db/schema.sql instead.
+      SEEKDB_DATABASE: ${SEEKDB_EMBEDDED_DATABASE:-test}
+      EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-384}
+      SEEKDB_FULLTEXT_PARSER: ${SEEKDB_FULLTEXT_PARSER:-ik}
+      DOCUMENT_CHUNK_MAX_CHARS: ${DOCUMENT_CHUNK_MAX_CHARS:-700}
+      POWERCONTEXT_URL: http://powercontext:8000
+      POWERCONTEXT_TOKEN: ${POWERCONTEXT_AUTH_TOKEN:?set POWERCONTEXT_AUTH_TOKEN in qoder/.env or the shell}
+      LABTRACE_HOST: 0.0.0.0
+      LABTRACE_PORT: "8100"
+      LABTRACE_CORS_ORIGINS: ${LABTRACE_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      LABTRACE_MAX_UPLOAD_MB: ${LABTRACE_MAX_UPLOAD_MB:-20}
+      # Optional: without these the app still imports documents, searches seekdb and records
+      # experiments; only generative answers fall back to evidence-only mode.
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CHAT_MODEL: ${CHAT_MODEL:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
+    volumes:
+      - labtrace-seekdb-data:/data
+    ports:
+      - "127.0.0.1:${LABTRACE_API_PORT:-8100}:8100"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
+        NODE_BASE_IMAGE: ${NODE_BASE_IMAGE:-node:22-alpine}
+        NGINX_BASE_IMAGE: ${NGINX_BASE_IMAGE:-nginx:1.27-alpine}
+    image: labtrace/frontend:0.1.0
+    container_name: labtrace-frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      # Loopback by default: a public demo must not expose other people's research data. Set
+      # LABTRACE_WEB_BIND=0.0.0.0 to serve the UI on the host network.
+      - "${LABTRACE_WEB_BIND:-127.0.0.1}:${LABTRACE_WEB_PORT:-5173}:80"
+    restart: unless-stopped
+
+volumes:
+  powercontext-data:
+  labtrace-seekdb-data:

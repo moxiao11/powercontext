@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LabTrace · 让研究有迹可循</title>
+<meta name="description" content="基于 OceanBase seekdb 与 PowerContext 的科研工作台：文献证据、实验追踪、跨会话记忆与周报。含可复现代码与真实验证记录。">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<nav><div class="wrap"><a class="brand" href="#top"><span class="mark">LT</span> LabTrace</a><div class="links"><a href="#features">工作流</a><a href="#arch">技术</a><a href="#screenshots">界面</a><a href="#demo">验证</a><a href="#run">运行</a><a href="#docs">交付</a></div></div></nav>
+<header class="hero" id="top"><div class="wrap">
+<span class="eyebrow"><span class="dot"></span> Qoder × OceanBase · 科研效率工具</span>
+<h1>让研究有迹可循，<br><span class="grad">让下一步不再重来。</span></h1>
+<p class="lede">论文里的证据、实验中的失败、昨天做的决定，终于可以连起来。LabTrace 将知识检索与研究记忆放进一个工作台，让你从上次停下的地方继续。</p>
+<div class="badges"><span class="badge">真实服务测试 <b>148 passed</b></span><span class="badge">seekdb <b>全文 + 向量</b></span><span class="badge">PowerContext <b>Memory + Handoff</b></span></div>
+<div class="cta"><a class="btn primary" href="#demo">查看验证结果</a><a class="btn" href="#run">本地启动</a><a class="btn" href="#docs">运行文档与源码</a></div>
+<div class="note warn" style="max-width:780px"><p><b>项目展示入口。</b>这里的截图和日志来自本地真实运行，实验数字均为原创示例。完整工作台请按说明启动；本页未连接个人科研数据库。Qoder Sites 发布与账号开发记录仍待完成。</p></div>
+</div></header>
+<section id="features"><div class="wrap"><h2><span class="idx">01</span>把一次研究，变成可以继续的积累</h2>
+<div class="grid g3">
+<div class="card"><h3>01 / 找到证据</h3><p>导入 PDF、Markdown 与 TXT，在 seekdb 中建立分块、全文及向量索引。每条检索结果保留标题、页码和原文。</p><ul><li>关键词 / 向量 / 混合检索</li><li>RRF 融合与来源说明</li><li>PDF 精确页码引用</li></ul></div>
+<div class="card"><h3>02 / 记住实验</h3><p>记录假设、参数、数据集、指标和失败原因。直接对比数据库中的实验，追问“为什么放弃这个方案”。</p><ul><li>JSON 实验导入</li><li>指标差值与最优实验</li><li>结论关联长期记忆</li></ul></div>
+<div class="card"><h3>03 / 接续研究</h3><p>把完成事项、决策和下一步保存到 PowerContext。新会话读取有效记忆和 Handoff 历史，恢复真实进度。</p><ul><li>按项目独立 Scope</li><li>记忆修订 / 停用</li><li>研究周报预览和导出</li></ul></div>
+</div></div></section>
+<section id="arch"><div class="wrap"><h2><span class="idx">02</span>知识与状态，各有自己的位置</h2>
+<div class="grid g2"><div class="card"><h3>OceanBase seekdb</h3><p>保存论文、分块与结构化实验。真实 SQL 执行 FULLTEXT、VECTOR ANN 与项目条件过滤，混合检索采用 RRF 融合。</p></div><div class="card"><h3>PowerContext</h3><p>保存研究方向、决策、失败、进度与计划。Source 留痕，Memory 管理有效版本，Handoff 提交并延续会话。</p></div></div>
+<pre class="flow-code">React 工作台 → FastAPI
+                    ├─ seekdb：文献 → 分块 → 检索 → 引用 / 实验对比
+                    └─ PowerContext：Source → Memory → Handoff → 新会话恢复
+
+真实记录 + 有效记忆 → 科研助手 / Markdown 周报</pre>
+<p>没有模型 API 也能导入、检索、追踪实验、保存记忆和生成模板周报。当前本地哈希向量只验证向量链路，不代表语义检索质量；真实模型能力尚待配置验证。</p>
+</div></section>
+<section id="screenshots"><div class="wrap"><h2><span class="idx">03</span>真实运行的工作台</h2><p>2026-10-28 浏览器截图。演示主题：Embodied Question Answering 与 3D Scene Memory。</p>
+<div class="grid g2 screenshot-grid"><figure><img src="docs/evidence/overview-2026-10-28.png" alt="LabTrace 科研总览，显示三篇资料、四组实验和八条有效记忆" loading="lazy"><figcaption>科研总览 · 所有记录来自真实后端</figcaption></figure><figure><img src="docs/evidence/restore-2026-10-28.png" alt="PowerContext 长期记忆与新会话恢复界面" loading="lazy"><figcaption>长期记忆 · 当前有效版本与历史快照分开</figcaption></figure></div>
+</div></section>
+<section id="demo"><div class="wrap"><h2><span class="idx">04</span>每一步，都可以自己验证</h2>
+<div class="grid g2"><div class="card"><h3>A / 论文证据检索</h3><p>原创资料入库 → 三模式检索 → 原文引用。两页 PDF 的 ROOMMERGE2026 引用精确落在第 2 页。</p></div><div class="card"><h3>B / 实验对比</h3><p>导入四条示例实验，accuracy 从 41.2 到 58.7，差值 17.5。数字从数据库读取，标注为示例。</p></div><div class="card"><h3>C / 跨会话恢复</h3><p>保存进度并提交 Handoff，独立 HTTP 客户端恢复。修订计划后读到新版本，拒绝陈旧客户端覆盖。容器重启后条目 ID 与交接版本保持一致。</p></div><div class="card"><h3>D / 科研周报</h3><p>按日期汇总论文、实验、有效决策和下一步。Markdown 可编辑、复制和下载，指标可回查原始记录。</p></div></div>
+<pre id="test-output">$ LABTRACE_LIVE=1 LABTRACE_API_URL=http://127.0.0.1:15173 python -m pytest -q
+148 passed in 18.70s
+# 121 个单元测试 + 27 个真实服务集成测试
+
+$ python scripts/e2e_demo.py --api http://127.0.0.1:15173 --keep
+PASS 全部检查通过</pre>
+<p><a href="docs/evidence/pytest-live-2026-10-28.txt">测试原始输出</a> · <a href="docs/evidence/e2e-demo-2026-10-28.txt">A–D 演示原始输出</a> · <a href="docs/VERIFICATION.md">复现与边界说明</a> · <a href="sample-data/papers/sample-pdf-eqa.pdf">下载原创 PDF</a></p>
+</div></section>
+<section id="run"><div class="wrap"><h2><span class="idx">05</span>在自己的环境中跑起来</h2><p>Docker Desktop / Compose，建议至少 6 GB 可用内存。所有密钥保留在本地环境文件。</p>
+<div class="grid g2"><div class="card"><h3>Windows / PowerShell</h3><pre id="windows-command">cd qoder
+.\scripts\start.ps1
+# 默认网页：http://127.0.0.1:5173</pre><button class="btn" data-copy="windows-command">复制命令</button></div><div class="card"><h3>Linux / macOS / WSL</h3><pre id="linux-command">cd qoder
+cp .env.example .env
+# 在 .env 中填写随机 POWERCONTEXT_AUTH_TOKEN
+docker compose up -d --build</pre><button class="btn" data-copy="linux-command">复制命令</button></div></div>
+<p>独立 seekdb、可选模型和完整配置见 <a href="docs/SETUP.md">运行说明</a>。当前为本地单用户工作台，尚无生产级多用户鉴权；公开在线实例需另行部署和配置访问控制。</p>
+</div></section>
+<section id="docs"><div class="wrap"><h2><span class="idx">06</span>可核对的交付</h2><!-- DELIVERABLE_LINKS -->
+<div class="note warn"><p><b>提交状态：</b>本地功能与技术验证已完成；比赛私有仓库 URL、Qoder UID、Qoder 主要开发证据及 Sites 公开网址待补齐。本次 Codex 补全不会被当作 Qoder 开发记录。真实用户效果数据尚未收集。</p></div>
+<p>发布应通过个人 Qoder Sites 账号，选择“任何人可访问”，再使用无痕窗口验证。<a href="https://docs.qoder.com/qoder/sites" target="_blank" rel="noopener">Qoder 官方发布说明</a></p>
+</div></section>
+<footer><div class="wrap">LabTrace · 检索过去的知识，继续当前的研究。<br>样例数据 CC0-1.0 · 基于 OceanBase PowerContext 比赛分支构建</div></footer>
+<script>
+document.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', async () => {
+  const value = document.getElementById(button.dataset.copy)?.textContent;
+  if (!value) return;
+  try { await navigator.clipboard.writeText(value); button.textContent = '已复制'; }
+  catch { button.textContent = '请选中上方命令复制'; }
+}));
+</script>
+</body></html>

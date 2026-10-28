@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html.light {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-ink-950 text-ink-100 antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
+  }
+
+  html.light body {
+    @apply bg-ink-50 text-ink-900;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-ink-700;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-600;
+  }
+
+  * {
+    @apply border-ink-700/60;
+  }
+
+  html.light * {
+    @apply border-ink-200;
+  }
+}
+
+@layer components {
+  .lt-card {
+    @apply rounded-xl border border-ink-700/70 bg-ink-900/70 shadow-card backdrop-blur-sm;
+  }
+
+  html.light .lt-card {
+    @apply border-ink-200 bg-white;
+  }
+
+  .lt-panel {
+    @apply rounded-lg border border-ink-700/60 bg-ink-850/60;
+  }
+
+  html.light .lt-panel {
+    @apply border-ink-200 bg-ink-50;
+  }
+
+  .lt-muted {
+    @apply text-ink-300;
+  }
+
+  html.light .lt-muted {
+    @apply text-ink-500;
+  }
+
+  .lt-label {
+    @apply text-[11px] font-medium uppercase tracking-wider text-ink-400;
+  }
+
+  .lt-input {
+    @apply w-full rounded-lg border border-ink-700 bg-ink-850/80 px-3 py-2 text-sm text-ink-100
+      placeholder:text-ink-400 outline-none transition
+      focus:border-accent-500 focus:ring-2 focus:ring-accent-500/25;
+  }
+
+  html.light .lt-input {
+    @apply border-ink-200 bg-white text-ink-900;
+  }
+
+  .lt-gradient-text {
+    @apply bg-gradient-to-r from-accent-300 via-accent-400 to-sky-300 bg-clip-text text-transparent;
+  }
+}

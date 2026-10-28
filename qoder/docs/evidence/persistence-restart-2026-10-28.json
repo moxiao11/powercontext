@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "project_id": "prj_45d0e178b2a7459c",
+  "container_restarted": "labtrace-powercontext",
+  "before_entry_ids": [
+    "mem_ent_28bb6b5bad8c4f2690083d81ce2e342f"
+  ],
+  "after_entry_ids": [
+    "mem_ent_28bb6b5bad8c4f2690083d81ce2e342f"
+  ],
+  "handoff_revision": {
+    "family": "handoff",
+    "artifact_id": "handoff",
+    "revision": 1
+  },
+  "fresh_http_client": true
+}
