@@ -1,4 +1,4 @@
-> 本文件用于设计与规划。当前验证结论见 `VERIFICATION.md`，本轮工具为 Codex，Qoder 主要开发记录仍待真实证据核实。
+> 本文件用于设计与规划。当前验证结论见 `VERIFICATION.md`，Qoder 对话原文已归档，主要实现过程见 `QODER_DEVELOPMENT_LOG.md`；Codex 后续补全另行记录。
 
 # LabTrace 开发计划
 

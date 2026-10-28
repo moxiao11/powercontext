@@ -63,8 +63,9 @@ python -m pytest -q
 
 - 未配置真实模型 / Embedding API；生成式回答和语义检索质量未验证。当前明确标注哈希向量与证据摘录。
 - 未验证 PowerContext 的自动抽取 / Topic Memory / Profile。显式 Memory 与 Handoff 不依赖这些能力。
-- Qoder Sites 公开发布、匿名访问、Qoder UID 和主要开发记录仍待完成。
-- 私有比赛仓库未提供，尚未推送；当前 origin 指向上游代理。
+- Qoder 对话文本已归档，主要开发过程见 `QODER_DEVELOPMENT_LOG.md`；原始界面截图 / 录屏和 UID 仍待补齐。
+- Qoder Sites 公开发布、匿名访问仍待完成。
+- 报名仓库已确认是 `https://github.com/moxiao11/powercontext`，使用本地 `competition` 远端；`origin` 保留上游来源。
 - 知识关联图未实现；不影响核心 A–D。
 - 无生产级多用户鉴权、并发压测、真实用户效果数据；当前为本地单用户工作台。
 

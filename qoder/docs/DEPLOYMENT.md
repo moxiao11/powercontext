@@ -65,7 +65,7 @@ python scripts/verify_persistence.py --api http://127.0.0.1:5173 --container lab
 
 ## 5. Qoder Sites 展示站
 
-当前尚未真实发布，缺少可用 Qoder 账号 / 站点信息。
+当前尚未真实发布，尚未获得可用于本次操作的 Qoder 站点会话及站点信息。
 
 Qoder Sites 支持静态网站，也提供含数据库、服务函数与存储的 Agent App；不同套餐能力有差异。
 这不等于其托管环境能原生运行本项目的 Python / Docker / seekdb 进程。

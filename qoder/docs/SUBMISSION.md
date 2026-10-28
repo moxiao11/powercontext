@@ -12,16 +12,16 @@ React 工作台、FastAPI 后端、seekdb 检索与实验记录、PowerContext M
 
 | 材料 | 状态与操作 |
 | --- | --- |
-| 比赛私有仓库 | 未提供；现有 origin 是上游代理地址。应推送到导入后的个人比赛仓库 |
+| 比赛仓库 | 提测表单已确认 `https://github.com/moxiao11/powercontext`；使用 `competition` 远端，提交前核对已推送的 HEAD |
 | Qoder Sites URL | 未发布。按 `DEPLOYMENT.md` 用个人账号发布并允许任何人访问 |
 | Qoder UID | 未提供。在 Qoder 设置 → 个人资料 → 编辑中复制真实 UID |
-| Qoder 主要开发记录 | 待核实。提供真实规划、编码、调试对话与截图 |
+| Qoder 主要开发记录 | 用户提供的对话文本已归档并整理；还需原始 Qoder 界面截图 / 录屏，详见 QODER_DEVELOPMENT_LOG.md |
 | 未登录访问验证 | 待发布。无痕窗口打开站点，保存结果 |
 | 真实用户效果 | 尚未收集，非基础验收必填。用 `USER_TESTING.md` 记录真实来源 |
 
-本轮工具是 Codex。源码、文件时间和本次验证日志无法证明主要开发在 Qoder 中完成。
-若此前没有真实 Qoder 过程，必须在 Qoder 中继续实质开发并保留记录，再评估是否符合赛道要求。
-不得改写工具名称、补造截图或声称已经公开发布。
+已归档的 Qoder 对话覆盖技术调研、主要后端和前端实现、测试与调试；Codex 后续补全单独记录。
+文本原文用于说明开发过程；按赛事材料要求仍需原始对话截图 / 录屏及账号 UID。
+不将本文生成的排版或文本截图当成 Qoder 原始界面证据，也不将本地预览地址当成已发布站点。
 
 ## Windows 启动
 
@@ -73,3 +73,24 @@ git rev-parse HEAD
 
 提交前检查无真实凭据，推送到自己的比赛仓库后填报该分支 / commit hash。
 工作区未提交改动无法由平台通过 commit hash 获取。
+
+## 成绩提测表单怎么填
+
+| 字段 | 填写内容 |
+| --- | --- |
+| 代码仓库地址 | 表单已锁定 `https://github.com/moxiao11/powercontext` |
+| Branch | `2026-competition-ecosystem` |
+| Commit id | 最新且已经推送的完整 commit hash；执行 `git rev-parse HEAD` 获取 |
+| 作品链接 | 个人 Qoder Sites 发布的完整 HTTPS URL；当前未发布，不能填写 localhost |
+
+推送与核对（从仓库根目录执行）：
+
+```bash
+git push competition HEAD:refs/heads/2026-competition-ecosystem
+git rev-parse HEAD
+git ls-remote competition refs/heads/2026-competition-ecosystem
+```
+
+后两条的 hash 应一致。已有报名分支包含其他赛道提交，合并时应保留，勿强制推送覆盖。
+
+“作品链接”尚未获得时，先按 [Qoder Sites 操作提示](QODER_SITES_PROMPT.md) 发布展示站，再回表单提交。

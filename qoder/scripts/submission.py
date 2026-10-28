@@ -187,19 +187,27 @@ def inspect(config: dict) -> dict:
     add(
         "qoder_development_evidence",
         "pass" if valid_evidence else "pending",
-        "Attach genuine Qoder development screenshots or video; Codex activity is not Qoder evidence.",
+        "Attach original Qoder screenshots or video and UID; an archived text transcript is supporting material.",
     )
     add(
         "anonymous_site_access",
         "pass" if config.get("anonymous_access_verified") is True else "pending",
         "Open the published Qoder Sites URL in a signed-out browser before marking verified.",
     )
+    transcript = ROOT / "docs/evidence/qoder-development-transcript.txt"
     return {
         "project": "LabTrace",
         "generated_at_utc": datetime.now(UTC).isoformat(),
         "branch": branch.stdout.strip(),
         "commit": head.stdout.strip(),
         "baseline": BASELINE,
+        "qoder_transcript": {
+            "path": transcript.relative_to(ROOT).as_posix(),
+            "sha256": hashlib.sha256(transcript.read_bytes()).hexdigest(),
+            "source": "user-provided Qoder conversation text",
+        }
+        if transcript.is_file()
+        else None,
         "ready_for_submission": all(item["status"] == "pass" for item in checks),
         "checks": checks,
         "validation_note": "This is a local completeness check. It does not establish site ownership, public access, or Qoder provenance.",
