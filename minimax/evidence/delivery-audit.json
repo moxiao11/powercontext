@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-28T09:59:15.147172+00:00",
+  "timestamp": "2026-10-28T10:04:28.551681+00:00",
   "checks": {
     "no_credential_patterns": true,
     "private_files_excluded": true,
@@ -11,7 +11,7 @@
     "no_private_reasoning_or_auth_fields": true
   },
   "passed": true,
-  "files_checked": 256,
+  "files_checked": 257,
   "known_key_available_for_exact_scan": false,
   "credential_pattern_findings": [],
   "private_file_findings": [],
