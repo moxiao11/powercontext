@@ -24,4 +24,6 @@ CLI 说明：https://docs.qoder.com/cli/sites
 
 Qoder Sites 支持静态网站及部分含数据库、服务函数和对象存储的 Agent App，能力取决于套餐；
 不能据此假定它原生支持运行本项目的 Docker / Python / seekdb 进程。
-当前未发布，缺少真实账号及站点权限；不使用其他厂商 Sites 代替。
+已通过 Qoder Sites 发布：https://labtrace-research-186qw7bzjxs.qoder.zone/ 。
+公开范围和匿名访问记录见 `docs/QODER_DEVELOPMENT_LOG.md` 与 `docs/evidence/site-anonymous-2026-10-28.json`。
+后续构建的内容需在 Qoder 中更新原站点并再次发布，才会改变线上版本。

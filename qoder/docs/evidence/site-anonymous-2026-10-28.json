@@ -1,0 +1,128 @@
+{
+  "site_url": "https://labtrace-research-186qw7bzjxs.qoder.zone/",
+  "checked_at_utc": "2026-10-28T08:03:31.803698+00:00",
+  "method": "curl GET with TLS certificate verification; no Authorization header or cookies; existing local network proxy",
+  "authenticated": false,
+  "checks": [
+    {
+      "path": "index.html",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 66255,
+      "matches_local": false,
+      "sha256": "4f2ad021a92ca57a128cbb63561dbc66db4413807dc489d7bd4d5b8a030741e2",
+      "error": ""
+    },
+    {
+      "path": "styles.css",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 10672,
+      "matches_local": true,
+      "sha256": "7a291d326a4f3859bc8b09d379a7ae1177da09b3358f48c6a69a610333326e52",
+      "error": "",
+      "initial_attempt": {
+        "passed": false,
+        "curl_exit": 28,
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "error": "curl: (28) Connection timed out after 8013 milliseconds"
+      },
+      "retried_at_utc": "2026-10-28T08:05:13.400626+00:00"
+    },
+    {
+      "path": "docs/SETUP.md",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 17172,
+      "matches_local": true,
+      "sha256": "9304a5694750bfcfe9d3cbb909ed652fa22278f7aaa96d90494c6e63f423a626",
+      "error": ""
+    },
+    {
+      "path": "docs/VERIFICATION.md",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 4531,
+      "matches_local": true,
+      "sha256": "21ebf016f3e85e7d98f10f1e7cab87b7846f8f97e8c4751970971138d89780d9",
+      "error": ""
+    },
+    {
+      "path": "docs/QODER_DEVELOPMENT_LOG.md",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 7238,
+      "matches_local": true,
+      "sha256": "c3ced4086863b2d52ffc303a87ee45df70484bb3f04ca6fec4bf4ce2603e751b",
+      "error": ""
+    },
+    {
+      "path": "docs/evidence/pytest-container-2026-10-28.txt",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 265,
+      "matches_local": true,
+      "sha256": "5db209919c588501075632a1a4ddd1cb6c95204be3c1fcc036230c17ff5b01cd",
+      "error": ""
+    },
+    {
+      "path": "docs/evidence/e2e-demo-2026-10-28.txt",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 7140,
+      "matches_local": true,
+      "sha256": "b6b9e3546532722444475e51d3596e247205aee1f8284c7b2819ee88917bc6d2",
+      "error": ""
+    },
+    {
+      "path": "docs/evidence/persistence-restart-2026-10-28.json",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 393,
+      "matches_local": true,
+      "sha256": "c987e8cf87a493482b0ad93c97981681b470cedb09592bef834e496e9b5020f5",
+      "error": ""
+    },
+    {
+      "path": "docs/evidence/overview-2026-10-28.png",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 58050,
+      "matches_local": true,
+      "sha256": "6c05157f40631ae21ab0dd63f1e5c5fbabe61dba32c94be599509b9bfafbc45f",
+      "error": ""
+    },
+    {
+      "path": "docs/evidence/qoder/01-original-task-changes.png",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 85299,
+      "matches_local": true,
+      "sha256": "5d460c2baf036572d2f0ff8b893b3287dcc391ecbce40a8928b8766906620865",
+      "error": ""
+    },
+    {
+      "path": "docs/evidence/qoder/02-original-validation.png",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 139303,
+      "matches_local": true,
+      "sha256": "b1bcb3bb89b9372406952a118a1f416ee42a3d277737bb5dce53c959be6f1aee",
+      "error": ""
+    },
+    {
+      "path": "sample-data/papers/sample-pdf-eqa.pdf",
+      "passed": true,
+      "curl_exit": 0,
+      "bytes": 3366,
+      "matches_local": true,
+      "sha256": "997f419706eabc02b1d2d3f5a28b4e6dc8f31c071874629546face53d331e9de",
+      "error": ""
+    }
+  ],
+  "all_passed": true,
+  "site_id": "01a18180-a882-7a8a-9184-9640b60dbff2",
+  "deployment_id": "01a18180-a944-7cbb-a48b-98b5e9d79e2f",
+  "snapshot_note": "Checks compare the initially published release with dist/site at verification time. Later local documentation edits are not assumed to be deployed."
+}

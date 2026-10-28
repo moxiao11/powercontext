@@ -105,7 +105,9 @@ qoder/
 
 本地项目与技术验证可用。用户已提供 Qoder 主要开发过程的对话文本，已归档并整理到开发记录。
 报名仓库为 [moxiao11/powercontext](https://github.com/moxiao11/powercontext)。
-**Qoder Sites 发布与公开访问验证仍待完成**；Qoder 对话文本、原任务截图和账号 ID 已归档。
+展示站已通过 Qoder Sites 发布：[LabTrace](https://labtrace-research-186qw7bzjxs.qoder.zone/)，可见范围为“任何人都可访问”。
+首页、文档、日志、截图与 PDF 共 12 项无登录 HTTP 访问检查通过，见 `docs/evidence/site-anonymous-2026-10-28.json`。
+Qoder 对话文本、原任务截图和账号 ID 已归档。**GitHub 写入授权仍待处理，本地提交尚未推送，不能直接用于平台提测。**
 Qoder 的主要实现记录与 Codex 后续工程补全分开记录。
 未配置真实模型 API，生成式问答和语义检索质量尚未验证；科研关联图尚未实现。
 当前为本地单用户工作台，没有生产级用户鉴权，公开实例需另行配置访问控制。

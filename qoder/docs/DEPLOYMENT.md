@@ -65,7 +65,9 @@ python scripts/verify_persistence.py --api http://127.0.0.1:5173 --container lab
 
 ## 5. Qoder Sites 展示站
 
-当前尚未真实发布，尚未获得可用于本次操作的 Qoder 站点会话及站点信息。
+已通过个人 Qoder CN 账号发布：https://labtrace-research-186qw7bzjxs.qoder.zone/ ，可见范围为“任何人都可访问”。
+发布界面见 `evidence/qoder/03-sites-published.png`；首页、文档、日志、截图、PDF 共 12 项匿名 HTTP 检查通过，
+记录见 `evidence/site-anonymous-2026-10-28.json`。仓库内的 `.qoder.site` 为 Qoder 生成的站点产物绑定，保留其原始内容。
 
 Qoder Sites 支持静态网站，也提供含数据库、服务函数与存储的 Agent App；不同套餐能力有差异。
 这不等于其托管环境能原生运行本项目的 Python / Docker / seekdb 进程。
@@ -106,3 +108,14 @@ python scripts/submission.py check --strict
 
 所有条件应为 pass；任何 pending 都需真实补齐。工具不替代 Qoder 主要开发证明或站点归属核实。
 细节见 `SUBMISSION.md`。
+
+## 7. Windows Docker Desktop 的残留 socket 故障
+
+2026-10-28 本机 Docker Desktop 启动时报告无法访问 `Docker/run/dockerInference`。
+排查发现旧 socket 是无法访问的零字节 ReparsePoint，与 [Docker 原项目故障记录](https://github.com/docker/desktop-feedback/issues/554) 一致。
+确认 Desktop / 后端已退出后，备份重命名仅含 socket 的 `Docker/run` 与 `docker-secrets-engine` 目录，
+重建空通信目录，再启动 Desktop，已恢复四个健康容器。镜像、容器、卷和数据库均未删除。
+
+恢复后网页代理的 `/api/health` 返回 seekdb connected 与 PowerContext ready，
+原演示项目仍有 3 篇资料、4 条实验和 8 条有效记忆。
+记录见 `evidence/docker-recovery-2026-10-28.json`。保留备份，不使用恢复出厂设置处理该问题。

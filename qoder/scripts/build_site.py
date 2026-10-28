@@ -44,7 +44,7 @@ def main() -> None:
         ("VERIFICATION", "本轮真实验证"),
         ("TECH_INTEGRATION", "指定技术集成"),
         ("QODER_DEVELOPMENT_LOG", "Qoder 记录状态"),
-        ("QODER_SITES_PROMPT", "下一步：Qoder Sites 发布"),
+        ("QODER_SITES_PROMPT", "Qoder Sites 发布与更新"),
         ("CODEX_COMPLETION_LOG", "本轮工程补全"),
     ]:
         links += f'<a class="btn" href="docs/{name}.md">{label}（Markdown）</a>'

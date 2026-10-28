@@ -97,7 +97,11 @@ def source_files():
         for filename in sorted(files):
             path = parent / filename
             relative = path.relative_to(ROOT)
-            if path.is_symlink() or (parent == ROOT and filename not in root_files):
+            if path.is_symlink() or (
+                parent == ROOT
+                and filename not in root_files
+                and not filename.endswith(".qoder.site")
+            ):
                 continue
             name = filename.lower()
             if name.endswith((".pyc", ".log", ".pid", ".tsbuildinfo")):
@@ -133,6 +137,13 @@ def inspect(config: dict) -> dict:
         "Commit qoder changes before recording the final competition hash."
         if changes.stdout.strip()
         else head.stdout.strip(),
+    )
+    add(
+        "pushed_commit",
+        "pass"
+        if head.returncode == 0 and config.get("pushed_commit") == head.stdout.strip()
+        else "pending",
+        "After pushing, compare the remote branch hash with HEAD and record it as pushed_commit.",
     )
     for relative in DOCS:
         path = ROOT / relative
@@ -192,7 +203,7 @@ def inspect(config: dict) -> dict:
     add(
         "anonymous_site_access",
         "pass" if config.get("anonymous_access_verified") is True else "pending",
-        "Open the published Qoder Sites URL in a signed-out browser before marking verified.",
+        "Verify the published URL without cookies or authentication and preserve the method and results.",
     )
     transcript = ROOT / "docs/evidence/qoder-development-transcript.txt"
     return {

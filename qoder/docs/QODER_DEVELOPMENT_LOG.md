@@ -22,7 +22,7 @@
 | 比赛基线 | `d647275c308e09b7b623f322a26f5c4e85734fb0` |
 | 项目目录 | `qoder/` |
 | Qoder UID / 账号 ID | `01a1786c-1bdd-7b07-83b3-14b9f548596e`（Qoder CN 设置 → 个人资料 → 编辑 → 账号 ID） |
-| Qoder Sites URL | 待真实发布 |
+| Qoder Sites URL | https://labtrace-research-186qw7bzjxs.qoder.zone/ |
 | Qoder 原始截图 | 见下方原任务截图索引 |
 
 ## 3. 开发阶段与源码定位
@@ -74,10 +74,16 @@ Qoder 原文覆盖主要功能从调研到实现和调试的过程；后续 Code
 | --- | --- |
 | [原任务变更列表](evidence/qoder/01-original-task-changes.png) | 原任务名称、09:41 时间、20 个文件的后续变更列表 |
 | [原任务验证结果](evidence/qoder/02-original-validation.png) | 原 Qoder 对话中的 136 passed、E2E 及真实服务调试说明 |
+| [Sites 发布界面](evidence/qoder/03-sites-published.png) | 真实 Qoder Sites 域名、“已发布”状态与“任何人都可访问”范围；此图作为发布证明 |
 
 截图记录了原 Qoder 任务 2026-10-28 的后续工作，补充了用户上传的 2026-10-27 文本范围。
 原任务中的 136 passed 是当时结果；后续 Codex 补充后的 148 passed 以本仓库的实际输出为准。
 账号 ID 从当前登录的 Qoder CN 个人资料只读获取，没有根据昵称猜测。
+
+本轮在 Qoder CN 中另建“创建展示站预览”任务，使用已有 `qoder/dist/site` 创建网站产物。
+用户随后确认已完成部署；发布 URL 已通过不带 Cookie / Authorization 的 HTTP 请求检查。
+检查记录见 [匿名访问记录](evidence/site-anonymous-2026-10-28.json)，包含页面与资源哈希；
+这是独立网络请求验证，没有将普通登录浏览器声称为无痕窗口。
 
 ## 7. 可选补充记录
 

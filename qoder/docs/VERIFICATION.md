@@ -59,13 +59,18 @@ python -m pytest -q
 3. **C / 记忆**：在科研助手保存研究进度，填写明确的决策、原因及下一步；确认 Memory / Source / Handoff 返回真实引用。清空会话或重新开浏览器，再点“继续上次研究”。在 Memory 页修订计划后再次恢复，当前摘要应显示修订内容，Handoff 只作为历史快照。
 4. **D / 周报**：选择记录所在日期，生成周报、预览、编辑、复制和下载 Markdown。指标与实验记录逐项核对。
 
+## 发布与运行恢复验证
+
+- Qoder Sites 已发布：https://labtrace-research-186qw7bzjxs.qoder.zone/ ，范围为“任何人都可访问”。
+- 12 项不带 Cookie / Authorization 的 HTTP 检查通过；CSS 首次连接超时后重试通过，原始记录保留两次结果，见 `evidence/site-anonymous-2026-10-28.json`。
+- Windows Docker Desktop socket 故障恢复后，四个容器 healthy，seekdb / PowerContext 可用，原项目保留 3 篇资料、4 条实验和 8 条记忆，见 `evidence/docker-recovery-2026-10-28.json`。
+- Qoder 原对话截图、账号 ID 和发布界面已归档，见 `QODER_DEVELOPMENT_LOG.md`。
+
 ## 未完成或未验证
 
 - 未配置真实模型 / Embedding API；生成式回答和语义检索质量未验证。当前明确标注哈希向量与证据摘录。
 - 未验证 PowerContext 的自动抽取 / Topic Memory / Profile。显式 Memory 与 Handoff 不依赖这些能力。
-- Qoder 对话文本已归档，主要开发过程见 `QODER_DEVELOPMENT_LOG.md`；原始界面截图 / 录屏和 UID 仍待补齐。
-- Qoder Sites 公开发布、匿名访问仍待完成。
-- 报名仓库已确认是 `https://github.com/moxiao11/powercontext`，使用本地 `competition` 远端；`origin` 保留上游来源。
+- 报名仓库为 `https://github.com/moxiao11/powercontext`，使用本地 `competition` 远端；GitHub 写入检查返回 403，用户选择稍后授权，代码仍未推送。
 - 知识关联图未实现；不影响核心 A–D。
 - 无生产级多用户鉴权、并发压测、真实用户效果数据；当前为本地单用户工作台。
 
