@@ -14,8 +14,8 @@ React 工作台、FastAPI 后端、seekdb 检索与实验记录、PowerContext M
 | --- | --- |
 | 比赛仓库 | 提测表单已确认 `https://github.com/moxiao11/powercontext`；使用 `competition` 远端，提交前核对已推送的 HEAD |
 | Qoder Sites URL | 未发布。按 `DEPLOYMENT.md` 用个人账号发布并允许任何人访问 |
-| Qoder UID | 未提供。在 Qoder 设置 → 个人资料 → 编辑中复制真实 UID |
-| Qoder 主要开发记录 | 用户提供的对话文本已归档并整理；还需原始 Qoder 界面截图 / 录屏，详见 QODER_DEVELOPMENT_LOG.md |
+| Qoder UID / 账号 ID | 已从 Qoder 设置 → 个人资料 → 编辑只读获取，见 QODER_DEVELOPMENT_LOG.md |
+| Qoder 主要开发记录 | 用户提供的对话文本及原任务变更、验证截图均已归档，详见 QODER_DEVELOPMENT_LOG.md |
 | 未登录访问验证 | 待发布。无痕窗口打开站点，保存结果 |
 | 真实用户效果 | 尚未收集，非基础验收必填。用 `USER_TESTING.md` 记录真实来源 |
 

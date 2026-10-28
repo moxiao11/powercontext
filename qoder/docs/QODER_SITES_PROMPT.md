@@ -18,7 +18,7 @@
 3. 本站为项目展示入口。完整应用需独立启动 FastAPI、seekdb 与 PowerContext；
    不要把静态页面或 localhost 宣称为公开在线工作台。
 4. 保留测试数据和真实科研成果的区分，测试结果按 docs/VERIFICATION.md 展示。
-5. Qoder 对话文本已归档；账号 UID 和原始对话截图尚待补齐，不编造记录。
+5. Qoder 对话文本和原任务截图已归档，按 docs/QODER_DEVELOPMENT_LOG.md 说明真实开发分工，不编造记录。
 6. 文档、截图、日志和 PDF 的链接必须在发布后可访问。
 7. 创建网站产物并核对预览，通过 Qoder Sites 发布，访问范围选择“任何人可访问”。
    若界面要求本人确认公开访问，请提示我操作。

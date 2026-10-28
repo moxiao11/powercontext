@@ -97,7 +97,7 @@ qoder/
 - [TECH_INTEGRATION](docs/TECH_INTEGRATION.md)：真实 SQL 与 PowerContext API。
 - [DEPLOYMENT](docs/DEPLOYMENT.md)：Docker、Qoder Sites 和公开部署。
 - [SUBMISSION](docs/SUBMISSION.md)：材料状态、自检、打包和提交方式。
-- [QODER_DEVELOPMENT_LOG](docs/QODER_DEVELOPMENT_LOG.md)：已归档的 Qoder 对话原文、开发过程与代码索引；待补原始界面截图和 UID。
+- [QODER_DEVELOPMENT_LOG](docs/QODER_DEVELOPMENT_LOG.md)：已归档的 Qoder 对话原文、原任务截图、账号 ID、开发过程与代码索引。
 - [CODEX_COMPLETION_LOG](docs/CODEX_COMPLETION_LOG.md)：本次实际工程活动。
 - [USER_TESTING](docs/USER_TESTING.md)：真实用户测试模板。
 
@@ -105,7 +105,7 @@ qoder/
 
 本地项目与技术验证可用。用户已提供 Qoder 主要开发过程的对话文本，已归档并整理到开发记录。
 报名仓库为 [moxiao11/powercontext](https://github.com/moxiao11/powercontext)。
-**Qoder Sites 发布、Qoder UID、原始 Qoder 对话截图 / 录屏仍待补齐**。
+**Qoder Sites 发布与公开访问验证仍待完成**；Qoder 对话文本、原任务截图和账号 ID 已归档。
 Qoder 的主要实现记录与 Codex 后续工程补全分开记录。
 未配置真实模型 API，生成式问答和语义检索质量尚未验证；科研关联图尚未实现。
 当前为本地单用户工作台，没有生产级用户鉴权，公开实例需另行配置访问控制。
